@@ -6,6 +6,8 @@
 
 #include "yosy/arrayable.zep.h"
 #include "yosy/token.zep.h"
+#include "yosy/valuelist.zep.h"
+#include "yosy/xarrayable.zep.h"
 #include "yosy/toml/lexer.zep.h"
 
 #endif

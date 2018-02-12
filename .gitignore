@@ -1,0 +1,6 @@
+**.o
+**.lo
+**.gch
+/.temp/
+/ext/.libs/
+/ext/yosy/.libs/

@@ -7,7 +7,7 @@ namespace Yosy;
  * @author Michael Rynn
  * 
  */
-class ValueList extends Arrayable
+final class ValueList extends Arrayable
 {
     private _type {get}; // string indication of value type
     protected _list;
@@ -17,47 +17,49 @@ class ValueList extends Arrayable
         let this->_list = [];
     }
 
-    public function offsetSet(int! offset, value)
+    public final function offsetSet(int! offset, value) -> void
     {
-        atype = gettype(value);
+        var atype;
+
+        let atype = gettype(value);
         if (count(this->_list) === 0) {
             let this->_type = atype;
         }
         else {
             if (this->_type !== atype) {
-                throw new XArrayable('Type ' . atype . ' added to ValueList of ' . this->_type);
+                throw new {yosy\xarrayable}("Type " . atype . " added to ValueList of " . this->_type);
             }
         }
         if (is_null(offset)) {
-            offset = count(this->_list);
+            let offset = count(this->_list);
         }
         let this->_list[offset] = value;
     }
 
-    public function offsetExists(int! offset): bool
+    public final function offsetExists(int! offset) -> bool 
     {
         return isset this->_list[offset];
     }
 
-    public function offsetGet(int! offset)
+    public final function offsetGet(int! offset) -> var
     {
         return (this->_list[offset]);
     }
 
-    public function offsetUnset(int! offset)
+    public final function offsetUnset(int! offset) -> void
     {
         unset(this->_list[offset]);
     }
 
-    public function count(): int
+    public final function count() -> int
     {
         return count(this->_list);
     }
 
     
-    public function get(int! offset, defaultValue = null)
+    public final function get(int! offset, defaultValue = null) -> var
     {
-        if isset $this->_list[offset] {
+        if isset this->_list[offset] {
             return this->_list[offset];
         }
         else {
@@ -74,10 +76,12 @@ class ValueList extends Arrayable
      * @param bool $recurse
      * @return array
      */
-    public function toArray(bool! recurse = true): array
+    public final function toArray(bool! recurse = true) -> array
     {
-        let result  = [];
-        foreach (this->_list as idx => value) {
+        var result = [];
+        var idx, value;
+        
+        for idx, value in this->_list {
             if (recurse && is_object(value) && (value instanceof \Yosy\Arrayable)) {
                 
                 let result[idx] = value->toArray();

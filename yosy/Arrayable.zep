@@ -12,13 +12,13 @@ namespace Yosy;
 abstract class Arrayable implements \ArrayAccess, \Countable {
     private _tag;
     
-    public function setTag(any) {
+    public final function setTag(any) -> void {
         let this->_tag = any;
     }
-    public function getTag() {
+    public final function getTag() -> var {
         return this->_tag;   
     }
     
-    abstract public function toArray();
+    abstract public function toArray() -> array;
 
 }

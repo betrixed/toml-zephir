@@ -26,6 +26,8 @@
 zend_class_entry *yosy_arrayable_ce;
 zend_class_entry *yosy_token_ce;
 zend_class_entry *yosy_toml_lexer_ce;
+zend_class_entry *yosy_valuelist_ce;
+zend_class_entry *yosy_xarrayable_ce;
 
 ZEND_DECLARE_MODULE_GLOBALS(yosy)
 
@@ -40,6 +42,8 @@ static PHP_MINIT_FUNCTION(yosy)
 	ZEPHIR_INIT(Yosy_Arrayable);
 	ZEPHIR_INIT(Yosy_Token);
 	ZEPHIR_INIT(Yosy_Toml_Lexer);
+	ZEPHIR_INIT(Yosy_ValueList);
+	ZEPHIR_INIT(Yosy_XArrayable);
 	return SUCCESS;
 }
 
