@@ -10,7 +10,10 @@ if test "$PHP_YOSY" = "yes"; then
 
 	AC_DEFINE(HAVE_YOSY, 1, [Whether you have Yosy])
 	yosy_sources="yosy.c kernel/main.c kernel/memory.c kernel/exception.c kernel/debug.c kernel/backtrace.c kernel/object.c kernel/array.c kernel/string.c kernel/fcall.c kernel/require.c kernel/file.c kernel/operators.c kernel/math.c kernel/concat.c kernel/variables.c kernel/filter.c kernel/iterator.c kernel/time.c kernel/exit.c yosy/arrayable.zep.c
+	yosy/box.zep.c
+	yosy/keytable.zep.c
 	yosy/token.zep.c
+	yosy/tokenstream.zep.c
 	yosy/valuelist.zep.c
 	yosy/xarrayable.zep.c
 	yosy/toml/lexer.zep.c "

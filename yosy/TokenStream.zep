@@ -1,13 +1,7 @@
 namespace Yosy;
 
-use Yosy\Lexer;
+use Yosy\Box;
 
-/**
- * Description of TokenStream
- * Gets same token object each time, from the current parse point
- * Go back , and look ahead, will require array of token clones, or tokenIds,
- * @author Michael Rynn
- */
 class TokenStream
 {
     protected _lines; // all lines
@@ -32,7 +26,7 @@ class TokenStream
     
     
     public function __construct() {
-        let this->_token = new {yosy\token}();
+        let this->_token = new \yosy\token();
     }
     public function setEOSId(int! id) {
         let this->_eosId = id;
@@ -63,7 +57,9 @@ class TokenStream
 
      public function setInput(string! input) -> void
      {
-     	var boxme = new {yosy\box}(explode("\n", input));
+     	var boxme;
+
+     	let boxme = new {yosy\box}(explode("\n", input));
 
         this->setLines(boxme);
      }
@@ -91,13 +87,6 @@ class TokenStream
     public function getValue() -> string {
         return this->_value;
     }
-    /** 
-     * Advance the parse then return the internal token id.
-     */
-    public function moveNextId() -> int
-    {
-        return this->parseNextId(this->_regex);
-    }
     
     /**
      * Fetch the internal token id without advancing parse
@@ -117,6 +106,16 @@ class TokenStream
         let this->_lineCount = count(lines->_me);
         let this->_curLine = (this->_lineCount > 0) ? lines->_me[0] : null;
     }
+
+/** 
+     * Advance the parse then return the internal token id.
+     */
+    public function moveNextId() -> int
+    {
+        return this->parseNextId(this->_regex);
+    }
+    
+
         /**
      * Set up the internal current token values, from the current parse
      * position in the line, and move the parse position to the next. Return
@@ -131,10 +130,14 @@ class TokenStream
      */
     
     private function parseNextId(var patterns) -> int {
+    	var id, pattern, takeoff;
+        var matches;
+        var nextLine;
+        var tid, uni;
         if (empty(this->_curLine)) {
-            var nextLine = this->_lineNo + 1;
+            let nextLine = this->_lineNo + 1;
             if (nextLine < this->_lineCount) {
-               let this->_curLine = this->lines->_me[nextLine];
+               let this->_curLine = this->_lines->_me[nextLine];
                let this->_offset = 0;
                let this->_value = "\n";
                let this->_id = this->_newLineId;
@@ -144,14 +147,13 @@ class TokenStream
                let this->_value = "";
                let this->_id = this->_eosId;
             }
-            let this->_isSingle = true; // really
+            let this->_isSingle = true; // not unknownId single
             return this->_id;
         }
         elseif (this->_offset == 0) {
             let this->_tokenLine = this->_lineNo + 1;
         }
-        var id, pattern, takeoff;
-        var matches;
+
         for id, pattern in this->_regex->_store {
             if (preg_match(pattern, this->_curLine, matches)) {
                 let this->_value = matches[1];
@@ -159,24 +161,24 @@ class TokenStream
 		        let this->_isSingle = false;
 		        let this->_line = this->_tokenLine;
 		        
-		        let takeOff = strlen(matches[1]);
-		        let this->_offset += takeOff;
-		        let this->_curLine = substr(this->curLine, takeOff);
+		        let takeoff = strlen(matches[1]);
+		        let this->_offset += takeoff;
+		        let this->_curLine = substr(this->_curLine, takeoff);
 		        return this->_id;
     		}
         }
         // no expressions matched, as a default, classify unicode character
         // get next unicode character using mb_substr,
         // then chop this using substr
-        var uni = mb_substr(this->_curLine,0,1);
-        var takeoff = strlen(uni);
+        let uni = mb_substr(this->_curLine,0,1);
+        let takeoff = strlen(uni);
         let this->_offset += takeoff; 
         let this->_curLine = substr(this->_curLine, takeoff);
         let this->_value = uni;
         
         // There are a lot of single character lexer Ids, so just look
         // them up in a table. If its not there, it is the all purpose 'T_CHAR'
-        var tid;
+        
 
         if !fetch tid, this->_singles->_store[uni]  {
         	let tid = this->_unknownId;
@@ -187,5 +189,5 @@ class TokenStream
         }
         let this->_id = tid;
         return tid;
-    }
+    }   
 }

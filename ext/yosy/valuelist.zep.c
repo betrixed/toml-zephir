@@ -31,7 +31,7 @@
  */
 ZEPHIR_INIT_CLASS(Yosy_ValueList) {
 
-	ZEPHIR_REGISTER_CLASS_EX(Yosy, ValueList, yosy, valuelist, yosy_arrayable_ce, yosy_valuelist_method_entry, 0);
+	ZEPHIR_REGISTER_CLASS_EX(Yosy, ValueList, yosy, valuelist, yosy_arrayable_ce, yosy_valuelist_method_entry, ZEND_ACC_FINAL_CLASS);
 
 	zend_declare_property_null(yosy_valuelist_ce, SL("_type"), ZEND_ACC_PRIVATE TSRMLS_CC);
 

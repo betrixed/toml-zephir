@@ -12,14 +12,20 @@ namespace Yosy;
  * Token used to communicate parse results
  *  
  */
-class Token
-{
+final class  Token {
     public value;
     public id;// integer identity!
     public line;
     public isSingle;
 
-    public function set(string! value, int id, int line, bool isSingle=false) -> void
+
+    final public function __construct() {
+        let this->value = "";
+        let this->id = 0;
+        let this->line = -1;
+        let this->isSingle = false;
+    }
+    final public function set(string! value, int id, int line, bool isSingle=false) -> void
     {
         let this->value = value;
         let this->id = id;

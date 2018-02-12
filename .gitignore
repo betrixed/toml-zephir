@@ -1,6 +1,9 @@
 **.o
 **.lo
 **.gch
+**.la
+compile-errors.log
+compile.log
 /.temp/
 /ext/.libs/
 /ext/yosy/.libs/

@@ -24,7 +24,10 @@
 
 
 zend_class_entry *yosy_arrayable_ce;
+zend_class_entry *yosy_box_ce;
+zend_class_entry *yosy_keytable_ce;
 zend_class_entry *yosy_token_ce;
+zend_class_entry *yosy_tokenstream_ce;
 zend_class_entry *yosy_toml_lexer_ce;
 zend_class_entry *yosy_valuelist_ce;
 zend_class_entry *yosy_xarrayable_ce;
@@ -40,7 +43,10 @@ static PHP_MINIT_FUNCTION(yosy)
 	REGISTER_INI_ENTRIES();
 	zephir_module_init();
 	ZEPHIR_INIT(Yosy_Arrayable);
+	ZEPHIR_INIT(Yosy_Box);
+	ZEPHIR_INIT(Yosy_KeyTable);
 	ZEPHIR_INIT(Yosy_Token);
+	ZEPHIR_INIT(Yosy_TokenStream);
 	ZEPHIR_INIT(Yosy_Toml_Lexer);
 	ZEPHIR_INIT(Yosy_ValueList);
 	ZEPHIR_INIT(Yosy_XArrayable);

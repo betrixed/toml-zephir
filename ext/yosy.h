@@ -5,7 +5,10 @@
 #define ZEPHIR_CLASS_ENTRIES_H
 
 #include "yosy/arrayable.zep.h"
+#include "yosy/box.zep.h"
+#include "yosy/keytable.zep.h"
 #include "yosy/token.zep.h"
+#include "yosy/tokenstream.zep.h"
 #include "yosy/valuelist.zep.h"
 #include "yosy/xarrayable.zep.h"
 #include "yosy/toml/lexer.zep.h"
