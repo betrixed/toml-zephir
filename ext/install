@@ -16,5 +16,5 @@ fi
 
 ${phpize_bin} --silent
 
-./configure --silent --enable-yosy
+./configure --silent --enable-toml
 make -s && sudo make -s install

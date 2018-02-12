@@ -4,17 +4,17 @@ top_srcdir = /var/www/parracan.org/private/toml-zephir/ext
 top_builddir = /var/www/parracan.org/private/toml-zephir/ext
 EGREP = /usr/bin/grep -E
 SED = /usr/bin/sed
-CONFIGURE_COMMAND = './configure' '--enable-yosy'
-CONFIGURE_OPTIONS = '--enable-yosy'
+CONFIGURE_COMMAND = './configure' '--enable-toml'
+CONFIGURE_OPTIONS = '--enable-toml'
 SHLIB_SUFFIX_NAME = so
 SHLIB_DL_SUFFIX_NAME = so
 ZEND_EXT_TYPE = zend_extension
 RE2C = re2c
 AWK = gawk
-shared_objects_yosy = yosy.lo kernel/main.lo kernel/memory.lo kernel/exception.lo kernel/debug.lo kernel/backtrace.lo kernel/object.lo kernel/array.lo kernel/string.lo kernel/fcall.lo kernel/require.lo kernel/file.lo kernel/operators.lo kernel/math.lo kernel/concat.lo kernel/variables.lo kernel/filter.lo kernel/iterator.lo kernel/time.lo kernel/exit.lo yosy/arrayable.lo yosy/box.lo yosy/keytable.lo yosy/token.lo yosy/tokenstream.lo yosy/valuelist.lo yosy/xarrayable.lo yosy/toml/lexer.lo
-PHP_PECL_EXTENSION = yosy
-YOSY_SHARED_LIBADD =
-PHP_MODULES = $(phplibdir)/yosy.la
+shared_objects_toml = toml.lo kernel/main.lo kernel/memory.lo kernel/exception.lo kernel/debug.lo kernel/backtrace.lo kernel/object.lo kernel/array.lo kernel/string.lo kernel/fcall.lo kernel/require.lo kernel/file.lo kernel/operators.lo kernel/math.lo kernel/concat.lo kernel/variables.lo kernel/filter.lo kernel/iterator.lo kernel/time.lo kernel/exit.lo toml/arrayable.lo toml/box.lo toml/keytable.lo toml/lexer.lo toml/table.lo toml/tablelist.lo toml/token.lo toml/tokenstream.lo toml/valuelist.lo toml/xarrayable.lo
+PHP_PECL_EXTENSION = toml
+TOML_SHARED_LIBADD =
+PHP_MODULES = $(phplibdir)/toml.la
 PHP_ZEND_EX =
 all_targets = $(PHP_MODULES) $(PHP_ZEND_EX)
 install_targets = install-modules install-headers
@@ -42,7 +42,7 @@ LDFLAGS =
 SHARED_LIBTOOL =
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 SHELL = /bin/sh
-INSTALL_HEADERS = ext/yosy/php_YOSY.h
+INSTALL_HEADERS = ext/toml/php_TOML.h
 mkinstalldirs = $(top_srcdir)/build/shtool mkdir -p
 INSTALL = $(top_srcdir)/build/shtool install -c
 INSTALL_DATA = $(INSTALL) -m 644
@@ -190,8 +190,8 @@ prof-use:
 
 .PHONY: all clean install distclean test prof-gen prof-clean prof-use
 .NOEXPORT:
-yosy.lo: /var/www/parracan.org/private/toml-zephir/ext/yosy.c
-	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/yosy.c -o yosy.lo 
+toml.lo: /var/www/parracan.org/private/toml-zephir/ext/toml.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/toml.c -o toml.lo 
 kernel/main.lo: /var/www/parracan.org/private/toml-zephir/ext/kernel/main.c
 	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/kernel/main.c -o kernel/main.lo 
 kernel/memory.lo: /var/www/parracan.org/private/toml-zephir/ext/kernel/memory.c
@@ -230,25 +230,29 @@ kernel/time.lo: /var/www/parracan.org/private/toml-zephir/ext/kernel/time.c
 	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/kernel/time.c -o kernel/time.lo 
 kernel/exit.lo: /var/www/parracan.org/private/toml-zephir/ext/kernel/exit.c
 	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/kernel/exit.c -o kernel/exit.lo 
-yosy/arrayable.lo: /var/www/parracan.org/private/toml-zephir/ext/yosy/arrayable.zep.c
-	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/yosy/arrayable.zep.c -o yosy/arrayable.lo 
-yosy/box.lo: /var/www/parracan.org/private/toml-zephir/ext/yosy/box.zep.c
-	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/yosy/box.zep.c -o yosy/box.lo 
-yosy/keytable.lo: /var/www/parracan.org/private/toml-zephir/ext/yosy/keytable.zep.c
-	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/yosy/keytable.zep.c -o yosy/keytable.lo 
-yosy/token.lo: /var/www/parracan.org/private/toml-zephir/ext/yosy/token.zep.c
-	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/yosy/token.zep.c -o yosy/token.lo 
-yosy/tokenstream.lo: /var/www/parracan.org/private/toml-zephir/ext/yosy/tokenstream.zep.c
-	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/yosy/tokenstream.zep.c -o yosy/tokenstream.lo 
-yosy/valuelist.lo: /var/www/parracan.org/private/toml-zephir/ext/yosy/valuelist.zep.c
-	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/yosy/valuelist.zep.c -o yosy/valuelist.lo 
-yosy/xarrayable.lo: /var/www/parracan.org/private/toml-zephir/ext/yosy/xarrayable.zep.c
-	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/yosy/xarrayable.zep.c -o yosy/xarrayable.lo 
-yosy/toml/lexer.lo: /var/www/parracan.org/private/toml-zephir/ext/yosy/toml/lexer.zep.c
-	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/yosy/toml/lexer.zep.c -o yosy/toml/lexer.lo 
-$(phplibdir)/yosy.la: ./yosy.la
-	$(LIBTOOL) --mode=install cp ./yosy.la $(phplibdir)
+toml/arrayable.lo: /var/www/parracan.org/private/toml-zephir/ext/toml/arrayable.zep.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/toml/arrayable.zep.c -o toml/arrayable.lo 
+toml/box.lo: /var/www/parracan.org/private/toml-zephir/ext/toml/box.zep.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/toml/box.zep.c -o toml/box.lo 
+toml/keytable.lo: /var/www/parracan.org/private/toml-zephir/ext/toml/keytable.zep.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/toml/keytable.zep.c -o toml/keytable.lo 
+toml/lexer.lo: /var/www/parracan.org/private/toml-zephir/ext/toml/lexer.zep.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/toml/lexer.zep.c -o toml/lexer.lo 
+toml/table.lo: /var/www/parracan.org/private/toml-zephir/ext/toml/table.zep.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/toml/table.zep.c -o toml/table.lo 
+toml/tablelist.lo: /var/www/parracan.org/private/toml-zephir/ext/toml/tablelist.zep.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/toml/tablelist.zep.c -o toml/tablelist.lo 
+toml/token.lo: /var/www/parracan.org/private/toml-zephir/ext/toml/token.zep.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/toml/token.zep.c -o toml/token.lo 
+toml/tokenstream.lo: /var/www/parracan.org/private/toml-zephir/ext/toml/tokenstream.zep.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/toml/tokenstream.zep.c -o toml/tokenstream.lo 
+toml/valuelist.lo: /var/www/parracan.org/private/toml-zephir/ext/toml/valuelist.zep.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/toml/valuelist.zep.c -o toml/valuelist.lo 
+toml/xarrayable.lo: /var/www/parracan.org/private/toml-zephir/ext/toml/xarrayable.zep.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/toml/xarrayable.zep.c -o toml/xarrayable.lo 
+$(phplibdir)/toml.la: ./toml.la
+	$(LIBTOOL) --mode=install cp ./toml.la $(phplibdir)
 
-./yosy.la: $(shared_objects_yosy) $(YOSY_SHARED_DEPENDENCIES)
-	$(LIBTOOL) --mode=link $(CC) $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS) $(LDFLAGS) -o $@ -export-dynamic -avoid-version -prefer-pic -module -rpath $(phplibdir) $(EXTRA_LDFLAGS) $(shared_objects_yosy) $(YOSY_SHARED_LIBADD)
+./toml.la: $(shared_objects_toml) $(TOML_SHARED_DEPENDENCIES)
+	$(LIBTOOL) --mode=link $(CC) $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS) $(LDFLAGS) -o $@ -export-dynamic -avoid-version -prefer-pic -module -rpath $(phplibdir) $(EXTRA_LDFLAGS) $(shared_objects_toml) $(TOML_SHARED_LIBADD)
 
