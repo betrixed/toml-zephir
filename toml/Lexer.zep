@@ -93,7 +93,7 @@ class Lexer {
         16 : "/^(,)/",
         17 : "/^(\\.)/",
         18 : "/^([-A-Z_a-z0-9]+)/",
-        19 : "/^(\\\(b|t|n|f|r|\"|\\\\|u[0-9AaBbCcDdEeFf]{4,4}|U[0-9AaBbCcDdEeFf]{8,8}))/",
+        19 : "/^(\\\\(b|t|n|f|r|\"|\\\\|u[0-9AaBbCcDdEeFf]{4,4}|U[0-9AaBbCcDdEeFf]{8,8}))/",
         21 : "/^([\\x{20}-\\x{21}\\x{23}-\\x{26}\\x{28}-\\x{5A}\\x{5E}-\\x{10FFFF}]+)/u"
     ];
 
@@ -101,6 +101,22 @@ class Lexer {
         Lexer::T_SPACE,
         Lexer::T_UNQUOTED_KEY,
         Lexer::T_INTEGER
+    ];
+
+    static public FullList = [
+        Lexer::T_SPACE, Lexer::T_BOOLEAN, Lexer::T_DATE_TIME, Lexer::T_FLOAT, Lexer::T_INTEGER, 
+        Lexer::T_3_QUOTATION_MARK, Lexer::T_3_APOSTROPHE,
+        Lexer::T_UNQUOTED_KEY,
+        Lexer::T_ESCAPED_CHARACTER
+    ];
+
+    static public BasicStringList = [
+        Lexer::T_SPACE, Lexer::T_BASIC_UNESCAPED, 
+        Lexer::T_ESCAPED_CHARACTER, Lexer::T_3_QUOTATION_MARK
+    ];
+
+    static public LiteralStringList = [
+        Lexer::T_BASIC_UNESCAPED, Lexer::T_ESCAPED_CHARACTER, Lexer::T_3_APOSTROPHE
     ];
 
     public function tomlVersion() -> string
@@ -114,5 +130,37 @@ class Lexer {
             let tokenId = 0;
         }
         return self::_nameList[tokenId];
+    }
+
+    static public function getExpSet(array! idList) -> array {
+        var result, id;
+        let result = [];
+        for id in idList {
+            let result[id] = Lexer::Regex[id];
+        }
+        return result;
+    }
+    public function tokenize(string input) -> <TokenList>
+    {
+        // convert string into array of tokens
+        // clone each from the stream
+        var stream;
+        var list;
+
+        let stream = new TokenStream();
+        stream->setExpList(new KeyTable(Lexer::Regex));
+        stream->setSingles(new KeyTable(Lexer::Singles));
+        stream->setUnknownId(Lexer::T_CHAR);
+        stream->setNewLineId(Lexer::T_NEWLINE);
+        stream->setEOSId(Lexer::T_EOS);
+        stream->setInput(input);
+
+        let list = [];
+
+        while (stream->moveNextId() !== Lexer::T_EOS) {
+            let list[] = clone stream->getToken();
+        }
+        let list[] = clone stream->getToken();
+        return new TokenList(list);
     }
 }

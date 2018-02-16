@@ -18,8 +18,8 @@
 #include "kernel/exception.h"
 #include "kernel/fcall.h"
 #include "kernel/concat.h"
-#include "ext/spl/spl_exceptions.h"
 #include "kernel/array.h"
+#include "ext/spl/spl_exceptions.h"
 
 
 /**
@@ -31,12 +31,15 @@
  */
 ZEPHIR_INIT_CLASS(Toml_ValueList) {
 
-	ZEPHIR_REGISTER_CLASS_EX(Toml, ValueList, toml, valuelist, toml_arrayable_ce, toml_valuelist_method_entry, ZEND_ACC_FINAL_CLASS);
+	ZEPHIR_REGISTER_CLASS(Toml, ValueList, toml, valuelist, toml_valuelist_method_entry, ZEND_ACC_FINAL_CLASS);
 
 	zend_declare_property_null(toml_valuelist_ce, SL("_type"), ZEND_ACC_PRIVATE TSRMLS_CC);
 
 	zend_declare_property_null(toml_valuelist_ce, SL("_list"), ZEND_ACC_PROTECTED TSRMLS_CC);
 
+	zend_declare_property_null(toml_valuelist_ce, SL("_tag"), ZEND_ACC_PRIVATE TSRMLS_CC);
+
+	zend_class_implements(toml_valuelist_ce TSRMLS_CC, 1, toml_arrayable_ce);
 	return SUCCESS;
 
 }
@@ -66,61 +69,82 @@ PHP_METHOD(Toml_ValueList, __construct) {
 
 }
 
-PHP_METHOD(Toml_ValueList, offsetSet) {
+PHP_METHOD(Toml_ValueList, getTag) {
 
-	zval *offset_param = NULL, *value, value_sub, atype, _0, _5, _7, _1$$4, _2$$5, _3$$5, _4$$5, _6$$6;
-	zend_long offset, ZEPHIR_LAST_CALL_STATUS;
 	zval *this_ptr = getThis();
 
+
+	RETURN_MEMBER(getThis(), "_tag");
+
+}
+
+PHP_METHOD(Toml_ValueList, setTag) {
+
+	zval *tag, tag_sub;
+	zval *this_ptr = getThis();
+
+	ZVAL_UNDEF(&tag_sub);
+
+	zephir_fetch_params(0, 1, 0, &tag);
+
+
+
+	zephir_update_property_zval(this_ptr, SL("_tag"), tag);
+
+}
+
+PHP_METHOD(Toml_ValueList, offsetSet) {
+
+	zend_long ZEPHIR_LAST_CALL_STATUS;
+	zval *offset = NULL, offset_sub, *value, value_sub, vtype, ct, _0, _1, _5, _2$$4, _3$$4, _4$$4;
+	zval *this_ptr = getThis();
+
+	ZVAL_UNDEF(&offset_sub);
 	ZVAL_UNDEF(&value_sub);
-	ZVAL_UNDEF(&atype);
+	ZVAL_UNDEF(&vtype);
+	ZVAL_UNDEF(&ct);
 	ZVAL_UNDEF(&_0);
+	ZVAL_UNDEF(&_1);
 	ZVAL_UNDEF(&_5);
-	ZVAL_UNDEF(&_7);
-	ZVAL_UNDEF(&_1$$4);
-	ZVAL_UNDEF(&_2$$5);
-	ZVAL_UNDEF(&_3$$5);
-	ZVAL_UNDEF(&_4$$5);
-	ZVAL_UNDEF(&_6$$6);
+	ZVAL_UNDEF(&_2$$4);
+	ZVAL_UNDEF(&_3$$4);
+	ZVAL_UNDEF(&_4$$4);
 
 	ZEPHIR_MM_GROW();
-	zephir_fetch_params(1, 2, 0, &offset_param, &value);
+	zephir_fetch_params(1, 2, 0, &offset, &value);
 
-	if (UNEXPECTED(Z_TYPE_P(offset_param) != IS_LONG)) {
-		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'offset' must be a int") TSRMLS_CC);
-		RETURN_MM_NULL();
-	}
-	offset = Z_LVAL_P(offset_param);
+	ZEPHIR_SEPARATE_PARAM(offset);
 
 
-	ZEPHIR_INIT_VAR(&atype);
-	zephir_gettype(&atype, value TSRMLS_CC);
 	zephir_read_property(&_0, this_ptr, SL("_list"), PH_NOISY_CC | PH_READONLY);
-	if (zephir_fast_count_int(&_0 TSRMLS_CC) == 0) {
-		zephir_update_property_zval(this_ptr, SL("_type"), &atype);
-	} else {
-		zephir_read_property(&_1$$4, this_ptr, SL("_type"), PH_NOISY_CC | PH_READONLY);
-		if (!ZEPHIR_IS_IDENTICAL(&_1$$4, &atype)) {
-			ZEPHIR_INIT_VAR(&_2$$5);
-			object_init_ex(&_2$$5, toml_xarrayable_ce);
-			zephir_read_property(&_3$$5, this_ptr, SL("_type"), PH_NOISY_CC | PH_READONLY);
-			ZEPHIR_INIT_VAR(&_4$$5);
-			ZEPHIR_CONCAT_SVSV(&_4$$5, "Type ", &atype, " added to ValueList of ", &_3$$5);
-			ZEPHIR_CALL_METHOD(NULL, &_2$$5, "__construct", NULL, 1, &_4$$5);
-			zephir_check_call_status();
-			zephir_throw_exception_debug(&_2$$5, "toml/ValueList.zep", 30 TSRMLS_CC);
-			ZEPHIR_MM_RESTORE();
-			return;
-		}
+	ZEPHIR_INIT_VAR(&ct);
+	ZVAL_LONG(&ct, zephir_fast_count_int(&_0 TSRMLS_CC));
+	ZEPHIR_INIT_VAR(&vtype);
+	zephir_gettype(&vtype, value TSRMLS_CC);
+	zephir_read_property(&_1, this_ptr, SL("_type"), PH_NOISY_CC | PH_READONLY);
+	if (ZEPHIR_IS_LONG_IDENTICAL(&ct, 0)) {
+		zephir_update_property_zval(this_ptr, SL("_type"), &vtype);
+	} else if (!ZEPHIR_IS_IDENTICAL(&_1, &vtype)) {
+		ZEPHIR_INIT_VAR(&_2$$4);
+		object_init_ex(&_2$$4, toml_xarrayable_ce);
+		zephir_read_property(&_3$$4, this_ptr, SL("_type"), PH_NOISY_CC | PH_READONLY);
+		ZEPHIR_INIT_VAR(&_4$$4);
+		ZEPHIR_CONCAT_SVSV(&_4$$4, "Type ", &vtype, " cannot be added to ValueList of ", &_3$$4);
+		ZEPHIR_CALL_METHOD(NULL, &_2$$4, "__construct", NULL, 16, &_4$$4);
+		zephir_check_call_status();
+		zephir_throw_exception_debug(&_2$$4, "toml/ValueList.zep", 41 TSRMLS_CC);
+		ZEPHIR_MM_RESTORE();
+		return;
 	}
-	ZVAL_LONG(&_5, offset);
-	if (Z_TYPE_P(&_5) == IS_NULL) {
-		zephir_read_property(&_6$$6, this_ptr, SL("_list"), PH_NOISY_CC | PH_READONLY);
-		offset = zephir_fast_count_int(&_6$$6 TSRMLS_CC);
+	ZEPHIR_INIT_VAR(&_5);
+	zephir_gettype(&_5, offset TSRMLS_CC);
+	if (ZEPHIR_IS_EMPTY(offset)) {
+		ZEPHIR_CPY_WRT(offset, &ct);
+	} else if (!ZEPHIR_IS_STRING_IDENTICAL(&_5, "integer")) {
+		ZEPHIR_THROW_EXCEPTION_DEBUG_STR(toml_xarrayable_ce, "ValueList only takes integer offsets", "toml/ValueList.zep", 47);
+		return;
 	}
-	ZEPHIR_INIT_VAR(&_7);
-	ZVAL_LONG(&_7, offset);
-	zephir_update_property_array(this_ptr, SL("_list"), &_7, value TSRMLS_CC);
+	zephir_update_property_array(this_ptr, SL("_list"), offset, value TSRMLS_CC);
 	ZEPHIR_MM_RESTORE();
 
 }
@@ -135,11 +159,7 @@ PHP_METHOD(Toml_ValueList, offsetExists) {
 
 	zephir_fetch_params(0, 1, 0, &offset_param);
 
-	if (UNEXPECTED(Z_TYPE_P(offset_param) != IS_LONG)) {
-		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'offset' must be a int") TSRMLS_CC);
-		RETURN_NULL();
-	}
-	offset = Z_LVAL_P(offset_param);
+	offset = zephir_get_intval(offset_param);
 
 
 	zephir_read_property(&_0, this_ptr, SL("_list"), PH_NOISY_CC | PH_READONLY);
@@ -159,16 +179,12 @@ PHP_METHOD(Toml_ValueList, offsetGet) {
 	ZEPHIR_MM_GROW();
 	zephir_fetch_params(1, 1, 0, &offset_param);
 
-	if (UNEXPECTED(Z_TYPE_P(offset_param) != IS_LONG)) {
-		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'offset' must be a int") TSRMLS_CC);
-		RETURN_MM_NULL();
-	}
-	offset = Z_LVAL_P(offset_param);
+	offset = zephir_get_intval(offset_param);
 
 
 	zephir_read_property(&_0, this_ptr, SL("_list"), PH_NOISY_CC | PH_READONLY);
 	ZEPHIR_OBS_VAR(&_1);
-	zephir_array_fetch_long(&_1, &_0, offset, PH_NOISY, "toml/ValueList.zep", 46 TSRMLS_CC);
+	zephir_array_fetch_long(&_1, &_0, offset, PH_NOISY, "toml/ValueList.zep", 59 TSRMLS_CC);
 	RETURN_CCTOR(&_1);
 
 }
@@ -183,11 +199,7 @@ PHP_METHOD(Toml_ValueList, offsetUnset) {
 
 	zephir_fetch_params(0, 1, 0, &offset_param);
 
-	if (UNEXPECTED(Z_TYPE_P(offset_param) != IS_LONG)) {
-		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'offset' must be a int") TSRMLS_CC);
-		RETURN_NULL();
-	}
-	offset = Z_LVAL_P(offset_param);
+	offset = zephir_get_intval(offset_param);
 
 
 	zephir_read_property(&_0, this_ptr, SL("_list"), PH_NOISY_CC | PH_READONLY);
@@ -222,11 +234,7 @@ PHP_METHOD(Toml_ValueList, get) {
 
 	zephir_fetch_params(0, 1, 1, &offset_param, &defaultValue);
 
-	if (UNEXPECTED(Z_TYPE_P(offset_param) != IS_LONG)) {
-		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'offset' must be a int") TSRMLS_CC);
-		RETURN_NULL();
-	}
-	offset = Z_LVAL_P(offset_param);
+	offset = zephir_get_intval(offset_param);
 	if (!defaultValue) {
 		defaultValue = &defaultValue_sub;
 		defaultValue = &__$null;
@@ -236,7 +244,7 @@ PHP_METHOD(Toml_ValueList, get) {
 	zephir_read_property(&_0, this_ptr, SL("_list"), PH_NOISY_CC | PH_READONLY);
 	if (zephir_array_isset_long(&_0, offset)) {
 		zephir_read_property(&_1$$3, this_ptr, SL("_list"), PH_NOISY_CC | PH_READONLY);
-		zephir_array_fetch_long(&_2$$3, &_1$$3, offset, PH_NOISY | PH_READONLY, "toml/ValueList.zep", 63 TSRMLS_CC);
+		zephir_array_fetch_long(&_2$$3, &_1$$3, offset, PH_NOISY | PH_READONLY, "toml/ValueList.zep", 76 TSRMLS_CC);
 		RETURN_CTORW(&_2$$3);
 	} else {
 		RETVAL_ZVAL(defaultValue, 1, 0);
@@ -285,7 +293,7 @@ PHP_METHOD(Toml_ValueList, toArray) {
 	ZEPHIR_INIT_VAR(&result);
 	array_init(&result);
 	zephir_read_property(&_0, this_ptr, SL("_list"), PH_NOISY_CC | PH_READONLY);
-	zephir_is_iterable(&_0, 0, "toml/ValueList.zep", 92);
+	zephir_is_iterable(&_0, 0, "toml/ValueList.zep", 105);
 	ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(&_0), _2, _3, _1)
 	{
 		ZEPHIR_INIT_NVAR(&idx);

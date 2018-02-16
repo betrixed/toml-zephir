@@ -10,45 +10,72 @@ namespace Toml;
  * It is more inefficient than a bare PHP array.
  * The internal $_store is public for easy iteration.
  * Any PHP key type is allowed. 
- * Aim is to have a "referenced" array as object without a reference operator &
- */
-final class KeyTable extends Arrayable
-{
+ * Strict TOML04 - says integer key values  must 
+ * be converted to strings!
+ * 
+ * Hence if we parsed an integer key, and converted it, and set the key as a string
+ * and then extracted the key later, it would of integer type again, due to PHP's
+ * convert everything that looks like an integer, to an integer,  for Array keys.
+ * "1" and intval(1) are the PHP same key,
+ * stored as binary integer. Hash algorithms are faster on binary integers, because the Hash,
+ * usually becomes a binary integer value, restricted to hash table storage.
+ * Quite often integer values are what is intended.
 
+ * It makes sense for internet HTML forms convenience, where everything is text,
+ * and numeric values are returned as string. 
+
+ * If the numeric string is beyond an upper limit of representation it remains a string,
+ * and in this case can never be an integer.
+ * So if this class was used as TOML tables, all integer keys may need to be converted back to 
+ * string on retrieval.
+ * This class gives a standard "referenced" array as object without a reference operator &
+ */
+final class KeyTable implements Arrayable
+{
     public _store;
+    private _tag;
 
     public final function __construct(array seed = null)
     {
-        var key, value;
-        if (!is_null(seed)) {
+        
+        if ! empty seed {
+            var key, value;
         	for key, value in seed {
                 let this->_store[key] = value;
             }
         } else {
-            let this->_store = [];
+            var init = [];
+            let this->_store = init;
         }
     }
-
+    public final function getTag() -> var
+    {
+        return this->_tag;
+    }
+    public final function setTag(var tag) -> void 
+    {
+        let this->_tag = tag;
+    }
     /**
      * @param type $index
      */
-    public final function offsetSet(var! index, var! value) -> void
+    public final function offsetSet(var index, var value) -> void
     {
-        echo "offsetSet index " . gettype(index) . " value " . index . PHP_EOL;
+        //echo "offsetSet index " . index . " value {" . value . "}" . ": " . gettype(value) . PHP_EOL;
         let this->_store[index] = value;
     }
 
-    public final function offsetExists(index) -> bool
+    public final function offsetExists(var index) -> bool
     {
         return isset this->_store[index];
     }
 
-    public final function offsetGet(index) -> var
+    public final function offsetGet(var index) -> var
     {
         return this->_store[index];
     }
 
-    public final function offsetUnset(index) -> void
+    public final function offsetUnset(var index) -> void
     {
         unset this->_store[index];
     }
@@ -58,7 +85,7 @@ final class KeyTable extends Arrayable
         return count($this->_store);
     }
 
-    public final function get(index, defaultValue = null)
+    public final function get(var index, defaultValue = null)
     {
         return isset  this->_store[ index] ?  this->_store[ index] :  defaultValue;
     }
@@ -75,46 +102,30 @@ final class KeyTable extends Arrayable
     {
         var result = [];
         var key,value;
-        for key, value in this->_store {
-            if (recurse && is_object(value) && (value instanceof \Toml\Arrayable)) {
-                let result[key] = value->toArray();
-            } else {
-                let result[key] = value;
+        if !empty this->_store {
+            for key, value in this->_store {
+                if (recurse && is_object(value) && (value instanceof \Toml\Arrayable)) {
+                    let result[key] = value->toArray();
+                } else {
+                    let result[key] = value;
+                }
             }
         }
         return result;
     }
 
-    /** iterate the config tree for $callback on values
-     * 
-     * @param type $callback
-     */
-    public final  function treeIterateValues(callback) -> void
-    {
-        if (!is_callable(callback)) {
-            throw new {toml\xarrayable}("Needs function for callback");
-        }
-        var key, value;
-        for key, value in get_object_vars($this) {
-            if (is_object(value) && (is_a(value, "\\Toml\\KeyTable"))) {
-                value->treeIterateValues(callback);
-            } else {
-                let this->_store[key] = \call_user_func(callback, value);
-            }
-        }
-    }
     /**
     * @param myKeyTable should be a KeyTable
     * @return KeyTable
     */
-    public final function merge( kt) -> var
+    public final function merge(kt) -> var
     {
         return this->_merge(kt);
     }
 
     /**
      * Merge values in $config, into the properties of $instance
-     * TableList objects are added together.
+     * 
      * @param \Yosy\KeyTable $config
      * @param \Yosy\KeyTable  $instance
      * @return \Yosy\KeyTable 

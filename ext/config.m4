@@ -13,9 +13,11 @@ if test "$PHP_TOML" = "yes"; then
 	toml/box.zep.c
 	toml/keytable.zep.c
 	toml/lexer.zep.c
-	toml/table.zep.c
+	toml/parser.zep.c
+	toml/parttag.zep.c
 	toml/tablelist.zep.c
 	toml/token.zep.c
+	toml/tokenlist.zep.c
 	toml/tokenstream.zep.c
 	toml/valuelist.zep.c
 	toml/xarrayable.zep.c "

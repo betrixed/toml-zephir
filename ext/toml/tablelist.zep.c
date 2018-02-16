@@ -12,13 +12,13 @@
 #include <Zend/zend_interfaces.h>
 
 #include "kernel/main.h"
+#include "kernel/operators.h"
 #include "kernel/memory.h"
-#include "ext/spl/spl_exceptions.h"
-#include "kernel/exception.h"
+#include "kernel/fcall.h"
 #include "kernel/object.h"
 #include "kernel/array.h"
-#include "kernel/fcall.h"
-#include "kernel/operators.h"
+#include "kernel/exception.h"
+#include "ext/spl/spl_exceptions.h"
 
 
 /**
@@ -28,33 +28,75 @@
 */
 ZEPHIR_INIT_CLASS(Toml_TableList) {
 
-	ZEPHIR_REGISTER_CLASS_EX(Toml, TableList, toml, tablelist, toml_arrayable_ce, toml_tablelist_method_entry, ZEND_ACC_FINAL_CLASS);
+	ZEPHIR_REGISTER_CLASS(Toml, TableList, toml, tablelist, toml_tablelist_method_entry, ZEND_ACC_FINAL_CLASS);
 
 	zend_declare_property_null(toml_tablelist_ce, SL("_list"), ZEND_ACC_PRIVATE TSRMLS_CC);
 
+	zend_declare_property_null(toml_tablelist_ce, SL("_tag"), ZEND_ACC_PRIVATE TSRMLS_CC);
+
+	zend_class_implements(toml_tablelist_ce TSRMLS_CC, 1, toml_arrayable_ce);
 	return SUCCESS;
 
 }
 
 PHP_METHOD(Toml_TableList, __construct) {
 
-	zval *arrayOfTable_param = NULL;
-	zval arrayOfTable;
+	zend_long ZEPHIR_LAST_CALL_STATUS;
+	zval *list_param = NULL, _0$$3, _1$$3;
+	zval list;
 	zval *this_ptr = getThis();
 
-	ZVAL_UNDEF(&arrayOfTable);
+	ZVAL_UNDEF(&list);
+	ZVAL_UNDEF(&_0$$3);
+	ZVAL_UNDEF(&_1$$3);
 
 	ZEPHIR_MM_GROW();
-	zephir_fetch_params(1, 0, 1, &arrayOfTable_param);
+	zephir_fetch_params(1, 0, 1, &list_param);
 
-	if (!arrayOfTable_param) {
-		ZEPHIR_INIT_VAR(&arrayOfTable);
-		array_init(&arrayOfTable);
+	if (!list_param) {
+		ZEPHIR_INIT_VAR(&list);
+		array_init(&list);
 	} else {
-	ZEPHIR_OBS_COPY_OR_DUP(&arrayOfTable, arrayOfTable_param);
+		zephir_get_arrval(&list, list_param);
 	}
 
 
+	if (ZEPHIR_IS_EMPTY(&list)) {
+		ZEPHIR_INIT_VAR(&_0$$3);
+		object_init_ex(&_0$$3, toml_keytable_ce);
+		ZEPHIR_CALL_METHOD(NULL, &_0$$3, "__construct", NULL, 3);
+		zephir_check_call_status();
+		ZEPHIR_INIT_VAR(&_1$$3);
+		ZVAL_LONG(&_1$$3, 0);
+		zephir_update_property_array(this_ptr, SL("_list"), &_1$$3, &_0$$3 TSRMLS_CC);
+	} else {
+		zephir_update_property_zval(this_ptr, SL("_list"), &list);
+	}
+	ZEPHIR_MM_RESTORE();
+
+}
+
+PHP_METHOD(Toml_TableList, getTag) {
+
+	zval *this_ptr = getThis();
+
+
+	RETURN_MEMBER(getThis(), "_tag");
+
+}
+
+PHP_METHOD(Toml_TableList, setTag) {
+
+	zval *tag, tag_sub;
+	zval *this_ptr = getThis();
+
+	ZVAL_UNDEF(&tag_sub);
+
+	zephir_fetch_params(0, 1, 0, &tag);
+
+
+
+	zephir_update_property_zval(this_ptr, SL("_tag"), tag);
 
 }
 
@@ -91,7 +133,7 @@ PHP_METHOD(Toml_TableList, getEndTable) {
 
 	zephir_read_property(&_0, this_ptr, SL("_list"), PH_NOISY_CC | PH_READONLY);
 	zephir_read_property(&_2, this_ptr, SL("_list"), PH_NOISY_CC | PH_READONLY);
-	zephir_array_fetch_long(&_1, &_0, (zephir_fast_count_int(&_2 TSRMLS_CC) - 1), PH_NOISY | PH_READONLY, "toml/TableList.zep", 39 TSRMLS_CC);
+	zephir_array_fetch_long(&_1, &_0, (zephir_fast_count_int(&_2 TSRMLS_CC) - 1), PH_NOISY | PH_READONLY, "toml/TableList.zep", 50 TSRMLS_CC);
 	RETURN_CTORW(&_1);
 
 }
@@ -120,8 +162,8 @@ PHP_METHOD(Toml_TableList, newTable) {
 	ZEPHIR_MM_GROW();
 
 	ZEPHIR_INIT_VAR(&item);
-	object_init_ex(&item, toml_table_ce);
-	ZEPHIR_CALL_METHOD(NULL, &item, "__construct", NULL, 8);
+	object_init_ex(&item, toml_keytable_ce);
+	ZEPHIR_CALL_METHOD(NULL, &item, "__construct", NULL, 3);
 	zephir_check_call_status();
 	zephir_update_property_array_append(this_ptr, SL("_list"), &item TSRMLS_CC);
 	RETURN_CCTOR(&item);
@@ -183,10 +225,12 @@ PHP_METHOD(Toml_TableList, offsetSet) {
 
 
 	ZEPHIR_INIT_VAR(&_0);
-	ZVAL_STRING(&_0, "\\Toml\\Table");
-	ZEPHIR_CALL_FUNCTION(&_1, "is_a", NULL, 3, value, &_0);
+	ZVAL_STRING(&_0, "\\Toml\\KeyTable");
+	ZEPHIR_CALL_FUNCTION(&_1, "is_a", NULL, 59, value, &_0);
 	zephir_check_call_status();
 	if (!zephir_is_true(&_1)) {
+		ZEPHIR_THROW_EXCEPTION_DEBUG_STR(toml_xarrayable_ce, "TableList Value must be \\Toml\\KeyTable", "toml/TableList.zep", 82);
+		return;
 	}
 	ZEPHIR_INIT_NVAR(&_0);
 	ZVAL_LONG(&_0, index);
@@ -236,7 +280,7 @@ PHP_METHOD(Toml_TableList, offsetGet) {
 
 
 	zephir_read_property(&_0, this_ptr, SL("_list"), PH_NOISY_CC | PH_READONLY);
-	zephir_array_fetch_long(&_1, &_0, index, PH_NOISY | PH_READONLY, "toml/TableList.zep", 81 TSRMLS_CC);
+	zephir_array_fetch_long(&_1, &_0, index, PH_NOISY | PH_READONLY, "toml/TableList.zep", 92 TSRMLS_CC);
 	RETURN_CTORW(&_1);
 
 }
@@ -282,7 +326,7 @@ PHP_METHOD(Toml_TableList, count) {
 
 /**
  * Return a copy of the TableList as array.
- * Default $recurse is true to return Table content instead of Table object
+ * Default $recurse is true to return Table content instead of KeyTable object
  * @param bool $recurse
  * @return array
  */
@@ -322,10 +366,10 @@ PHP_METHOD(Toml_TableList, toArray) {
 	ZVAL_LONG(&_1, 0);
 	ZVAL_LONG(&_2, zephir_fast_count_int(&_0 TSRMLS_CC));
 	ZVAL_NULL(&_3);
-	ZEPHIR_CALL_FUNCTION(&result, "array_fill", NULL, 11, &_1, &_2, &_3);
+	ZEPHIR_CALL_FUNCTION(&result, "array_fill", NULL, 60, &_1, &_2, &_3);
 	zephir_check_call_status();
 	zephir_read_property(&_1, this_ptr, SL("_list"), PH_NOISY_CC | PH_READONLY);
-	zephir_is_iterable(&_1, 0, "toml/TableList.zep", 113);
+	zephir_is_iterable(&_1, 0, "toml/TableList.zep", 124);
 	ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(&_1), _5, _6, _4)
 	{
 		ZEPHIR_INIT_NVAR(&idx);
@@ -347,61 +391,6 @@ PHP_METHOD(Toml_TableList, toArray) {
 	ZEPHIR_INIT_NVAR(&value);
 	ZEPHIR_INIT_NVAR(&idx);
 	RETURN_CCTOR(&result);
-
-}
-
-/** Iterate tree for $callback on values of members
- * 
- * @param type $callback
- */
-PHP_METHOD(Toml_TableList, treeIterateValues) {
-
-	zend_bool _2$$4;
-	zend_long ZEPHIR_LAST_CALL_STATUS;
-	zval *callback_param = NULL, value, _0, *_1;
-	zval callback;
-	zval *this_ptr = getThis();
-
-	ZVAL_UNDEF(&callback);
-	ZVAL_UNDEF(&value);
-	ZVAL_UNDEF(&_0);
-
-	ZEPHIR_MM_GROW();
-	zephir_fetch_params(1, 1, 0, &callback_param);
-
-	if (UNEXPECTED(Z_TYPE_P(callback_param) != IS_STRING && Z_TYPE_P(callback_param) != IS_NULL)) {
-		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'callback' must be a string") TSRMLS_CC);
-		RETURN_MM_NULL();
-	}
-	if (EXPECTED(Z_TYPE_P(callback_param) == IS_STRING)) {
-		zephir_get_strval(&callback, callback_param);
-	} else {
-		ZEPHIR_INIT_VAR(&callback);
-		ZVAL_EMPTY_STRING(&callback);
-	}
-
-
-	if (!(zephir_is_callable(&callback TSRMLS_CC))) {
-		ZEPHIR_THROW_EXCEPTION_DEBUG_STR(toml_xarrayable_ce, "Needs function for callback", "toml/TableList.zep", 122);
-		return;
-	}
-	zephir_read_property(&_0, this_ptr, SL("_list"), PH_NOISY_CC | PH_READONLY);
-	zephir_is_iterable(&_0, 0, "toml/TableList.zep", 130);
-	ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(&_0), _1)
-	{
-		ZEPHIR_INIT_NVAR(&value);
-		ZVAL_COPY(&value, _1);
-		_2$$4 = Z_TYPE_P(&value) == IS_OBJECT;
-		if (_2$$4) {
-			_2$$4 = (zephir_is_instance_of(&value, SL("\\Toml\\Table") TSRMLS_CC));
-		}
-		if (_2$$4) {
-			ZEPHIR_CALL_METHOD(NULL, &value, "treeiteratevalues", NULL, 0, &callback);
-			zephir_check_call_status();
-		}
-	} ZEND_HASH_FOREACH_END();
-	ZEPHIR_INIT_NVAR(&value);
-	ZEPHIR_MM_RESTORE();
 
 }
 

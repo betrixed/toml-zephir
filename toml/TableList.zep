@@ -9,20 +9,31 @@
  * zero-indexed array
 */
 namespace Toml;
+use Toml\KeyTable;
 
-final class TableList extends Arrayable {
-    // This seperates key path component for nested Table objects.
+final class TableList implements Arrayable {
+    // This seperates key path component for nested Arrayable objects.
     private _list;
+    private _tag;
 
-    public final function __construct(array! arrayOfTable = null) {
-        /*if is_null(arrayOfTable) {
-            let this->_list =  [];
-            let this->_list[] = new Table();
+    public final function __construct(array list = null) {
+       if empty list {
+            //let this->_list =  [];
+            let this->_list[0] = new KeyTable();
         }
         else {
             //TODO: check all members are Table objects, and no key:values
-            let this->_list = arrayOfTable;
-        }*/
+            let this->_list = list;
+        } 
+    }
+
+    public final function getTag() -> var
+    {
+        return this->_tag;
+    }
+    public final function setTag(var tag) -> void 
+    {
+        let this->_tag = tag;
     }
     /** 
      * return offset to last Table *
@@ -36,7 +47,7 @@ final class TableList extends Arrayable {
      * @return \Toml\Table
      */
     public final function getEndTable() -> var {
-        return this->_list[count(this->_list) - 1];
+        return this->_list[ count(this->_list) - 1 ];
     }
     
     public final function getTables() -> array {
@@ -48,7 +59,7 @@ final class TableList extends Arrayable {
      */
     public final function newTable() -> var {
         var item; 
-        let item = new Table();
+        let item = new KeyTable();
         let this->_list[] = item;
         return item;
     }
@@ -67,8 +78,8 @@ final class TableList extends Arrayable {
      * @param type $value
      */
     public final function offsetSet(int! index, var value) -> void {
-        if (!is_a(value, "\\Toml\\Table")) {
-            //throw new xarrayable("TableList Value must be a Table");
+        if (!is_a(value, "\\Toml\\KeyTable")) {
+            throw new XArrayable("TableList Value must be \\Toml\\KeyTable");
         }
         let this->_list[index] = value;
     }
@@ -96,7 +107,7 @@ final class TableList extends Arrayable {
 
     /**
      * Return a copy of the TableList as array.
-     * Default $recurse is true to return Table content instead of Table object
+     * Default $recurse is true to return Table content instead of KeyTable object
      * @param bool $recurse
      * @return array
      */
@@ -112,22 +123,7 @@ final class TableList extends Arrayable {
         }
         return result;
     }
-    /** Iterate tree for $callback on values of members
-     * 
-     * @param type $callback
-     */
     
-    public final function treeIterateValues(string! callback) -> void {
-        if (!is_callable(callback)) { 
-            throw new XArrayable("Needs function for callback");
-        }
-        var  value;
-        for value in this->_list {    
-            if (is_object(value) && (value instanceof "\\Toml\\Table")) {
-                value->treeIterateValues(callback);
-            }
-        }
-    }
 }
 
 

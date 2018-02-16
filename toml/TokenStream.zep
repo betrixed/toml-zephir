@@ -62,7 +62,11 @@ class TokenStream
         this->setLines(boxme);
      }
 
-                  
+            
+    public function getLine() -> int {
+        return this->_tokenLine;
+    }      
+    
     public function hasPendingTokens() -> bool {
         return (this->_id != this->_eosId);
     }
@@ -73,7 +77,8 @@ class TokenStream
      */
     public function getToken() -> var
     {
-        var token = this->_token;
+        var token;
+        let token = this->_token;
         token->set( this->_value, this->_id, this->_tokenLine, this->_isSingle);
         return token;
     }
@@ -97,12 +102,14 @@ class TokenStream
       * This sets the parse state to before the first line.
       * To get the first token, call moveNextId
       */
-    public function setLines(var lines) -> void {
-        let this->_lines = lines;
+    public function setLines(var boxed) -> void {
+        var ct;
+        let ct = count(boxed->_me);
+        let this->_lines = boxed;
         let this->_lineNo = 0;
         let this->_offset = 0;
-        let this->_lineCount = count(lines->_me);
-        let this->_curLine = (this->_lineCount > 0) ? lines->_me[0] : null;
+        let this->_lineCount = ct;
+        let this->_curLine = (ct > 0) ? boxed->_me[0] : null;
     }
 
 /** 

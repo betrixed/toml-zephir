@@ -10,7 +10,7 @@
 
 #include "kernel/globals.h"
 
-#define PHP_TOML_NAME        "toml"
+#define PHP_TOML_NAME        "TOM04"
 #define PHP_TOML_VERSION     "0.0.1"
 #define PHP_TOML_EXTNAME     "toml"
 #define PHP_TOML_AUTHOR      "Michael Rynn"

@@ -7,46 +7,59 @@ namespace Toml;
  * @author Michael Rynn
  * 
  */
-final class ValueList extends Arrayable
+final class ValueList implements Arrayable
 {
     private _type {get}; // string indication of value type
     protected _list;
-    
+    private _tag;
+
+
     public final function __construct()
     {
         let this->_list = [];
     }
 
-    public final function offsetSet(int! offset, value) -> void
+    public final function getTag() -> var
     {
-        var atype;
+        return this->_tag;
+    }
+    public final function setTag(var tag) -> void 
+    {
+        let this->_tag = tag;
+    }
+    
+    public final function offsetSet(var offset, value) -> void
+    {
+        var vtype, ct;
+        let ct = count(this->_list);
+        let vtype = gettype(value);
 
-        let atype = gettype(value);
-        if (count(this->_list) === 0) {
-            let this->_type = atype;
+        if ct === 0 {
+            let this->_type = vtype;
         }
-        else {
-            if (this->_type !== atype) {
-                throw new XArrayable("Type " . atype . " added to ValueList of " . this->_type);
-            }
+        elseif this->_type !== vtype {
+            throw new XArrayable("Type " . vtype . " cannot be added to ValueList of " . this->_type);
         }
-        if (is_null(offset)) {
-            let offset = count(this->_list);
+        if empty offset {
+            let offset = ct;
+        }
+        elseif gettype(offset) !== "integer" {
+            throw new XArrayable("ValueList only takes integer offsets");
         }
         let this->_list[offset] = value;
     }
 
-    public final function offsetExists(int! offset) -> bool 
+    public final function offsetExists(int offset) -> bool 
     {
         return isset this->_list[offset];
     }
 
-    public final function offsetGet(int! offset) -> var
+    public final function offsetGet(int offset) -> var
     {
         return (this->_list[offset]);
     }
 
-    public final function offsetUnset(int! offset) -> void
+    public final function offsetUnset(int offset) -> void
     {
         unset(this->_list[offset]);
     }
@@ -57,7 +70,7 @@ final class ValueList extends Arrayable
     }
 
     
-    public final function get(int! offset, defaultValue = null) -> var
+    public final function get(int offset, defaultValue = null) -> var
     {
         if isset this->_list[offset] {
             return this->_list[offset];

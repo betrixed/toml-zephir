@@ -52,8 +52,8 @@
         "check-invalid-reads": false,
         "internal-call-transformation": false
     },
-    "namespace": "yosy",
-    "name": "toml",
+    "namespace": "toml",
+    "name": "TOM04",
     "description": "A toml parser, adapted from Yosymfony/Toml",
     "author": "Michael Rynn",
     "version": "0.0.1",

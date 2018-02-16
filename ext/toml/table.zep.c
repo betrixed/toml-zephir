@@ -128,27 +128,16 @@ PHP_METHOD(Toml_Table, __construct) {
 PHP_METHOD(Toml_Table, offsetSet) {
 
 	zend_long ZEPHIR_LAST_CALL_STATUS;
-	zval *index_param = NULL, *value, value_sub, _0$$3;
-	zval index;
+	zval *index, index_sub, *value, value_sub, _0$$3;
 	zval *this_ptr = getThis();
 
-	ZVAL_UNDEF(&index);
+	ZVAL_UNDEF(&index_sub);
 	ZVAL_UNDEF(&value_sub);
 	ZVAL_UNDEF(&_0$$3);
 
 	ZEPHIR_MM_GROW();
-	zephir_fetch_params(1, 2, 0, &index_param, &value);
+	zephir_fetch_params(1, 2, 0, &index, &value);
 
-	if (UNEXPECTED(Z_TYPE_P(index_param) != IS_STRING && Z_TYPE_P(index_param) != IS_NULL)) {
-		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'index' must be a string") TSRMLS_CC);
-		RETURN_MM_NULL();
-	}
-	if (EXPECTED(Z_TYPE_P(index_param) == IS_STRING)) {
-		zephir_get_strval(&index, index_param);
-	} else {
-		ZEPHIR_INIT_VAR(&index);
-		ZVAL_EMPTY_STRING(&index);
-	}
 
 
 	if (Z_TYPE_P(value) == IS_ARRAY) {
@@ -156,9 +145,9 @@ PHP_METHOD(Toml_Table, offsetSet) {
 		object_init_ex(&_0$$3, toml_table_ce);
 		ZEPHIR_CALL_METHOD(NULL, &_0$$3, "__construct", NULL, 8, value);
 		zephir_check_call_status();
-		zephir_update_property_zval_zval(this_ptr, &index, &_0$$3 TSRMLS_CC);
+		zephir_update_property_zval_zval(this_ptr, index, &_0$$3 TSRMLS_CC);
 	} else {
-		zephir_update_property_zval_zval(this_ptr, &index, value TSRMLS_CC);
+		zephir_update_property_zval_zval(this_ptr, index, value TSRMLS_CC);
 	}
 	ZEPHIR_MM_RESTORE();
 
@@ -166,87 +155,51 @@ PHP_METHOD(Toml_Table, offsetSet) {
 
 PHP_METHOD(Toml_Table, offsetExists) {
 
-	zval *index_param = NULL;
-	zval index;
+	zval *index, index_sub;
 	zval *this_ptr = getThis();
 
-	ZVAL_UNDEF(&index);
+	ZVAL_UNDEF(&index_sub);
 
-	ZEPHIR_MM_GROW();
-	zephir_fetch_params(1, 1, 0, &index_param);
-
-	if (UNEXPECTED(Z_TYPE_P(index_param) != IS_STRING && Z_TYPE_P(index_param) != IS_NULL)) {
-		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'index' must be a string") TSRMLS_CC);
-		RETURN_MM_NULL();
-	}
-	if (EXPECTED(Z_TYPE_P(index_param) == IS_STRING)) {
-		zephir_get_strval(&index, index_param);
-	} else {
-		ZEPHIR_INIT_VAR(&index);
-		ZVAL_EMPTY_STRING(&index);
-	}
+	zephir_fetch_params(0, 1, 0, &index);
 
 
-	RETURN_MM_BOOL(zephir_isset_property_zval(this_ptr, &index TSRMLS_CC));
+
+	RETURN_BOOL(zephir_isset_property_zval(this_ptr, index TSRMLS_CC));
 
 }
 
 PHP_METHOD(Toml_Table, offsetGet) {
 
-	zval *index_param = NULL, _0;
-	zval index;
+	zval *index, index_sub, _0;
 	zval *this_ptr = getThis();
 
-	ZVAL_UNDEF(&index);
+	ZVAL_UNDEF(&index_sub);
 	ZVAL_UNDEF(&_0);
 
 	ZEPHIR_MM_GROW();
-	zephir_fetch_params(1, 1, 0, &index_param);
+	zephir_fetch_params(1, 1, 0, &index);
 
-	if (UNEXPECTED(Z_TYPE_P(index_param) != IS_STRING && Z_TYPE_P(index_param) != IS_NULL)) {
-		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'index' must be a string") TSRMLS_CC);
-		RETURN_MM_NULL();
-	}
-	if (EXPECTED(Z_TYPE_P(index_param) == IS_STRING)) {
-		zephir_get_strval(&index, index_param);
-	} else {
-		ZEPHIR_INIT_VAR(&index);
-		ZVAL_EMPTY_STRING(&index);
-	}
 
 
 	ZEPHIR_OBS_VAR(&_0);
-	zephir_read_property_zval(&_0, this_ptr, &index, PH_NOISY_CC);
+	zephir_read_property_zval(&_0, this_ptr, index, PH_NOISY_CC);
 	RETURN_CCTOR(&_0);
 
 }
 
 PHP_METHOD(Toml_Table, offsetUnset) {
 
-	zval *index_param = NULL, __$null;
-	zval index;
+	zval *index, index_sub, __$null;
 	zval *this_ptr = getThis();
 
-	ZVAL_UNDEF(&index);
+	ZVAL_UNDEF(&index_sub);
 	ZVAL_NULL(&__$null);
 
-	ZEPHIR_MM_GROW();
-	zephir_fetch_params(1, 1, 0, &index_param);
-
-	if (UNEXPECTED(Z_TYPE_P(index_param) != IS_STRING && Z_TYPE_P(index_param) != IS_NULL)) {
-		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'index' must be a string") TSRMLS_CC);
-		RETURN_MM_NULL();
-	}
-	if (EXPECTED(Z_TYPE_P(index_param) == IS_STRING)) {
-		zephir_get_strval(&index, index_param);
-	} else {
-		ZEPHIR_INIT_VAR(&index);
-		ZVAL_EMPTY_STRING(&index);
-	}
+	zephir_fetch_params(0, 1, 0, &index);
 
 
-	zephir_update_property_zval_zval(this_ptr, &index, &__$null TSRMLS_CC);
-	ZEPHIR_MM_RESTORE();
+
+	zephir_update_property_zval_zval(this_ptr, index, &__$null TSRMLS_CC);
 
 }
 
@@ -351,37 +304,26 @@ PHP_METHOD(Toml_Table, path) {
 
 PHP_METHOD(Toml_Table, get) {
 
-	zval *index_param = NULL, *defaultValue = NULL, defaultValue_sub, __$null, _0$$3;
-	zval index;
+	zval *index, index_sub, *defaultValue = NULL, defaultValue_sub, __$null, _0$$3;
 	zval *this_ptr = getThis();
 
-	ZVAL_UNDEF(&index);
+	ZVAL_UNDEF(&index_sub);
 	ZVAL_UNDEF(&defaultValue_sub);
 	ZVAL_NULL(&__$null);
 	ZVAL_UNDEF(&_0$$3);
 
 	ZEPHIR_MM_GROW();
-	zephir_fetch_params(1, 1, 1, &index_param, &defaultValue);
+	zephir_fetch_params(1, 1, 1, &index, &defaultValue);
 
-	if (UNEXPECTED(Z_TYPE_P(index_param) != IS_STRING && Z_TYPE_P(index_param) != IS_NULL)) {
-		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'index' must be a string") TSRMLS_CC);
-		RETURN_MM_NULL();
-	}
-	if (EXPECTED(Z_TYPE_P(index_param) == IS_STRING)) {
-		zephir_get_strval(&index, index_param);
-	} else {
-		ZEPHIR_INIT_VAR(&index);
-		ZVAL_EMPTY_STRING(&index);
-	}
 	if (!defaultValue) {
 		defaultValue = &defaultValue_sub;
 		defaultValue = &__$null;
 	}
 
 
-	if (zephir_isset_property_zval(this_ptr, &index TSRMLS_CC)) {
+	if (zephir_isset_property_zval(this_ptr, index TSRMLS_CC)) {
 		ZEPHIR_OBS_VAR(&_0$$3);
-		zephir_read_property_zval(&_0$$3, this_ptr, &index, PH_NOISY_CC);
+		zephir_read_property_zval(&_0$$3, this_ptr, index, PH_NOISY_CC);
 		RETURN_CCTOR(&_0$$3);
 	}
 	RETVAL_ZVAL(defaultValue, 1, 0);
@@ -428,7 +370,7 @@ PHP_METHOD(Toml_Table, toArray) {
 	array_init(&result);
 	ZEPHIR_CALL_FUNCTION(&_0, "get_object_vars", NULL, 2, this_ptr);
 	zephir_check_call_status();
-	zephir_is_iterable(&_0, 0, "toml/Table.zep", 149);
+	zephir_is_iterable(&_0, 0, "toml/Table.zep", 153);
 	ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(&_0), _2, _3, _1)
 	{
 		ZEPHIR_INIT_NVAR(&key);
@@ -490,12 +432,12 @@ PHP_METHOD(Toml_Table, treeIterateValues) {
 
 
 	if (!(zephir_is_callable(callback TSRMLS_CC))) {
-		ZEPHIR_THROW_EXCEPTION_DEBUG_STR(toml_xarrayable_ce, "Need callback argument", "toml/Table.zep", 161);
+		ZEPHIR_THROW_EXCEPTION_DEBUG_STR(toml_xarrayable_ce, "Need callback argument", "toml/Table.zep", 165);
 		return;
 	}
 	ZEPHIR_CALL_FUNCTION(&_0, "get_object_vars", NULL, 2, this_ptr);
 	zephir_check_call_status();
-	zephir_is_iterable(&_0, 0, "toml/Table.zep", 170);
+	zephir_is_iterable(&_0, 0, "toml/Table.zep", 174);
 	ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(&_0), _2, _3, _1)
 	{
 		ZEPHIR_INIT_NVAR(&key);

@@ -10,7 +10,7 @@ if (PHP_TOML != "no") {
     AC_DEFINE("ZEPHIR_USE_PHP_JSON", 1, "Whether PHP json extension is present at compile time");
   }
   
-  ADD_SOURCES(configure_module_dirname + "/toml", "arrayable.zep.c box.zep.c keytable.zep.c lexer.zep.c table.zep.c tablelist.zep.c token.zep.c tokenstream.zep.c valuelist.zep.c xarrayable.zep.c", "toml");
+  ADD_SOURCES(configure_module_dirname + "/toml", "arrayable.zep.c box.zep.c keytable.zep.c lexer.zep.c parser.zep.c parttag.zep.c tablelist.zep.c token.zep.c tokenlist.zep.c tokenstream.zep.c valuelist.zep.c xarrayable.zep.c", "toml");
   ADD_FLAG("CFLAGS_TOML", "/D ZEPHIR_RELEASE /Oi /Ot /Oy /Ob2 /Gs /GF /Gy /GL");
   ADD_FLAG("CFLAGS", "/D ZEPHIR_RELEASE /Oi /Ot /Oy /Ob2 /Gs /GF /Gy /GL");
   ADD_FLAG("LDFLAGS", "/LTCG");

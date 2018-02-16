@@ -11,7 +11,7 @@ SHLIB_DL_SUFFIX_NAME = so
 ZEND_EXT_TYPE = zend_extension
 RE2C = re2c
 AWK = gawk
-shared_objects_toml = toml.lo kernel/main.lo kernel/memory.lo kernel/exception.lo kernel/debug.lo kernel/backtrace.lo kernel/object.lo kernel/array.lo kernel/string.lo kernel/fcall.lo kernel/require.lo kernel/file.lo kernel/operators.lo kernel/math.lo kernel/concat.lo kernel/variables.lo kernel/filter.lo kernel/iterator.lo kernel/time.lo kernel/exit.lo toml/arrayable.lo toml/box.lo toml/keytable.lo toml/lexer.lo toml/table.lo toml/tablelist.lo toml/token.lo toml/tokenstream.lo toml/valuelist.lo toml/xarrayable.lo
+shared_objects_toml = toml.lo kernel/main.lo kernel/memory.lo kernel/exception.lo kernel/debug.lo kernel/backtrace.lo kernel/object.lo kernel/array.lo kernel/string.lo kernel/fcall.lo kernel/require.lo kernel/file.lo kernel/operators.lo kernel/math.lo kernel/concat.lo kernel/variables.lo kernel/filter.lo kernel/iterator.lo kernel/time.lo kernel/exit.lo toml/arrayable.lo toml/box.lo toml/keytable.lo toml/lexer.lo toml/parser.lo toml/parttag.lo toml/tablelist.lo toml/token.lo toml/tokenlist.lo toml/tokenstream.lo toml/valuelist.lo toml/xarrayable.lo
 PHP_PECL_EXTENSION = toml
 TOML_SHARED_LIBADD =
 PHP_MODULES = $(phplibdir)/toml.la
@@ -238,12 +238,16 @@ toml/keytable.lo: /var/www/parracan.org/private/toml-zephir/ext/toml/keytable.ze
 	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/toml/keytable.zep.c -o toml/keytable.lo 
 toml/lexer.lo: /var/www/parracan.org/private/toml-zephir/ext/toml/lexer.zep.c
 	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/toml/lexer.zep.c -o toml/lexer.lo 
-toml/table.lo: /var/www/parracan.org/private/toml-zephir/ext/toml/table.zep.c
-	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/toml/table.zep.c -o toml/table.lo 
+toml/parser.lo: /var/www/parracan.org/private/toml-zephir/ext/toml/parser.zep.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/toml/parser.zep.c -o toml/parser.lo 
+toml/parttag.lo: /var/www/parracan.org/private/toml-zephir/ext/toml/parttag.zep.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/toml/parttag.zep.c -o toml/parttag.lo 
 toml/tablelist.lo: /var/www/parracan.org/private/toml-zephir/ext/toml/tablelist.zep.c
 	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/toml/tablelist.zep.c -o toml/tablelist.lo 
 toml/token.lo: /var/www/parracan.org/private/toml-zephir/ext/toml/token.zep.c
 	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/toml/token.zep.c -o toml/token.lo 
+toml/tokenlist.lo: /var/www/parracan.org/private/toml-zephir/ext/toml/tokenlist.zep.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/toml/tokenlist.zep.c -o toml/tokenlist.lo 
 toml/tokenstream.lo: /var/www/parracan.org/private/toml-zephir/ext/toml/tokenstream.zep.c
 	$(LIBTOOL) --mode=compile $(CC)  -I. -I/var/www/parracan.org/private/toml-zephir/ext $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /var/www/parracan.org/private/toml-zephir/ext/toml/tokenstream.zep.c -o toml/tokenstream.lo 
 toml/valuelist.lo: /var/www/parracan.org/private/toml-zephir/ext/toml/valuelist.zep.c
