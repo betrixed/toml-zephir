@@ -36,12 +36,16 @@ class TokenStream
     {
         let this->_unknownId = $id;
     }
+
+    public function getExpMap() -> var {
+        return this->_regex;
+    }
     /**
      * Argument is reference to associative array[int] of string regular expressions
      * @param array $ref
      */
-    public function setExpList(var ref) -> void {
-        let this->_regex = ref;
+    public function setExpMap(var obj) -> void {
+        let this->_regex = obj;
     }
     /** 
      * For lookup of tokenId of single character string

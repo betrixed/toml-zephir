@@ -14,45 +14,71 @@ namespace Toml;
  */
 class Parser
 {
-	    // consts for parser expression tables
-    const E_BRIEF = 0;
-    const E_FULL = 1;
-    const E_LSTRING = 2;
-    const E_BSTRING = 3;
 
     // Waiting for a test case that shows $useKeyStore is needed
     //private useKeyStore = false;
     //private keys = []; //usage controlled by $useKeyStore
     //private currentKeyPrefix = ''; //usage controlled by $useKeyStore
 
+    const E_KEYS = 1;
+    const E_VALUES = 2;
+    const E_LITERAL = 3;
+    const E_BASIC = 4;
+
     private _root = null; // root Table object
     private _table = null; // dyanamic reference to current Table object
 // For regex table stack
     private _ts = null;
-     // Current regex table type
-    private _expSetId = -1;
+
     // Stack of regex types.
+    
+    private _xid; 
     private _expStack = [];
     // key value parse
-    public _briefExpressions = [];  
-    public _fullExpressions = [];
-    public _basicString = [];
-    public _literalString = [];
-
-
-    
+    public _briefExpressions;  
+    public _fullExpressions;
+    public _basicString;
+    public _literalString;
 
    
+    
+    // Its safer to use Ids, than store an object references
+    // on a stack
+    private function setExpMap(int! xid) -> void 
+    {
+
+        switch (xid) {
+            case Parser::E_KEYS:
+                this->_ts->setExpMap(this->_briefExpressions);
+                break;
+
+            case Parser::E_VALUES:
+                this->_ts->setExpMap(this->_fullExpressions);
+                break;
+
+            case Parser::E_LITERAL:
+                
+                this->_ts->setExpMap(this->_literalString);
+                break;
+
+            case Parser::E_BASIC:
+                this->_ts->setExpMap(this->_basicString);
+                break;
+            default:
+                return;
+        }
+        let this->_xid = xid;
+    }
 
     /**
      * Set the expression set to the previous on the
      * expression set stack (a stack of integers) 
      */
-    public function popExpSet() -> void
+    protected function popExpMap() -> void
     {
-        var value;
-        let value = array_pop(this->_expStack);
-        this->setExpSet(value);
+        var xid;
+        let xid = array_pop(this->_expStack);
+        this->setExpMap(xid);
     }
 
     /**
@@ -60,40 +86,13 @@ class Parser
      * constant
      * @param int $value
      */
-    public function pushExpSet(int! value) ->  void
+    protected function pushExpMap(int! xid) ->  void
     {
     	// save current value
-        let this->_expStack[] = this->_expSetId;
-        this->setExpSet(value);
+        let this->_expStack[] = this->_xid;
+        this->setExpMap(xid);
     }
 
-    private function setExpSet(int! value) -> void
-    {
-        let this->_expSetId = value;
-        switch (value) {
-            case Parser::E_BRIEF:
-                this->_ts->setExpList(this->_briefExpressions);
-                break;
-            case Parser::E_BSTRING:
-                this->_ts->setExpList(this->_basicString);
-                break;
-            case Parser::E_LSTRING:
-                this->_ts->setExpList(this->_literalString);
-                break;
-            case Parser::E_FULL:
-            default:
-                this->_ts->setExpList(this->_fullExpressions);
-                break;
-        }
-    }
-
-    /*
-      public function setupTokenize() {
-      this->regex = & Lexer::$Regex;
-      this->token = new Token();
-      }
-     * 
-     */
 
     /**
      * Everything that must be setup before calling setInput
@@ -105,10 +104,10 @@ class Parser
         let this->_root = new KeyTable();
         let this->_table = this->_root;
 
-        let this->_briefExpressions = new KeyTable(Lexer::getExpSet(Lexer::BriefList));
-        let this->_fullExpressions = new KeyTable(Lexer::getExpSet(Lexer::FullList));
-        let this->_basicString = new KeyTable(Lexer::getExpSet(Lexer::BasicStringList));
-        let this->_literalString = new KeyTable(Lexer::getExpSet(Lexer::LiteralStringList));
+        let this->_briefExpressions = new KeyTable(Lexer::getExpMap(Lexer::BriefList));
+        let this->_fullExpressions = new KeyTable(Lexer::getExpMap(Lexer::FullList));
+        let this->_basicString = new KeyTable(Lexer::getExpMap(Lexer::BasicStringList));
+        let this->_literalString = new KeyTable(Lexer::getExpMap(Lexer::LiteralStringList));
 
         let ts = new TokenStream();
         ts->setSingles(new KeyTable(Lexer::Singles));
@@ -117,8 +116,7 @@ class Parser
         ts->setNewLineId(Lexer::T_NEWLINE);
         ts->setEOSId(Lexer::T_EOS);
         let this->_ts = ts; // setExpSet requires this
-        // point to the base regexp array
-        this->setExpSet(Parser::E_BRIEF);
+        this->setExpMap(Parser::E_KEYS);
     }
 
     /**
@@ -171,9 +169,6 @@ class Parser
      */
     private function implementation(<TokenStream> ts) -> void
     {
-        //if (this->useKeyStore) {
-        //    this->currentKeyPrefix = '';
-        //}
 
         int tokenId;
         let this->_table = this->_root;
@@ -181,10 +176,7 @@ class Parser
         let tokenId = (int) ts->moveNextId();
 
         while (tokenId != Lexer::T_EOS) {
-            //$tokenName = Lexer::tokenName($tokenId);
-            
             switch (tokenId) {
-
                 case Lexer::T_HASH :
                     let tokenId = (int) this->parseComment(ts);
                     break;
@@ -222,14 +214,14 @@ class Parser
             this->throwTokenError(ts->getToken(), tokenId);
         }
         // parsing a comment so use basic string expression set
-        this->pushExpSet(Parser::E_BSTRING);
+        this->pushExpMap(Parser::E_KEYS);
         while (true) {
             let tokenId = (int) ts->moveNextId();
             if (tokenId == Lexer::T_NEWLINE) || (tokenId == Lexer::T_EOS) {
                 break;
             }
         }
-        this->popExpSet();
+        this->popExpMap();
         return tokenId;
     }
 
@@ -272,7 +264,7 @@ class Parser
         if tokenId != Lexer::T_EQUAL {
             this->throwTokenError(ts->getToken(), Lexer::T_EQUAL);
         }
-        this->pushExpSet(Parser::E_FULL);
+        this->pushExpMap(Parser::E_VALUES);
 
         let tokenId = (int)  ts->moveNextId();//clear EQUAL
         if tokenId == Lexer::T_SPACE {
@@ -290,7 +282,7 @@ class Parser
             let value = this->parseSimpleValue(ts);
             this->_table->offsetSet(keyName, value);
         }
-        this->popExpSet();
+        this->popExpMap();
         let tokenId = (int)  ts->moveNextId(); // clear value parse ends
         if !isFromInlineTable {
             return this->finishLine(ts);
@@ -431,7 +423,7 @@ class Parser
      */
     private function parseBasicString(<TokenStream> ts) -> string
     {
-        this->pushExpSet(Parser::E_BSTRING);
+        this->pushExpMap(Parser::E_BASIC);
         
         int tokenId;
         string value;
@@ -457,7 +449,7 @@ class Parser
             let result = result . value;
             let tokenId = (int) ts->moveNextId();
         }
-        this->popExpSet();
+        this->popExpMap();
         return result;
     }
 
@@ -472,7 +464,7 @@ class Parser
         if tokenId != Lexer::T_3_QUOTATION_MARK {
             this->throwTokenError(ts->getToken(), Lexer::T_3_QUOTATION_MARK);
         }
-        this->pushExpSet(Parser::E_BSTRING);
+        this->pushExpMap(Parser::E_BASIC);
 
         
         let result = "";
@@ -484,7 +476,7 @@ class Parser
         while (doLoop) {
             switch (tokenId) {
                 case Lexer::T_3_QUOTATION_MARK :
-                    this->popExpSet();
+                    this->popExpMap();
                     let doLoop = false;
                     break;
                 case Lexer::T_EOS:
@@ -533,7 +525,7 @@ class Parser
             this->throwTokenError(ts->getToken(), Lexer::T_APOSTROPHE);
         }
 
-        this->pushExpSet(Parser::E_LSTRING);
+        this->pushExpMap(Parser::E_LITERAL);
 
         let tokenId = (int) ts->moveNextId();
 
@@ -545,7 +537,7 @@ class Parser
             let result = result . (string) ts->getValue();
             let tokenId =  (int) ts->moveNextId();
         }
-        this->popExpSet();
+        this->popExpMap();
         return result;
     }
 
@@ -558,7 +550,7 @@ class Parser
         if (tokenId != Lexer::T_3_APOSTROPHE) {
             this->throwTokenError(ts->getToken(), Lexer::T_3_APOSTROPHE);
         }
-        this->pushExpSet(Parser::E_LSTRING);
+        this->pushExpMap(Parser::E_LITERAL);
 
         let result = "";
 
@@ -578,7 +570,7 @@ class Parser
             let result = result . (string) ts->getValue();
             let tokenId = (int) ts->moveNextId();
         }
-        this->popExpSet();
+        this->popExpMap();
 
         if (tokenId != Lexer::T_3_APOSTROPHE) {
             this->throwTokenError(ts->getToken(), Lexer::T_3_APOSTROPHE);
@@ -742,7 +734,7 @@ class Parser
         if (tokenId != Lexer::T_LEFT_CURLY_BRACE) {
             this->throwTokenError(ts->getToken(), Lexer::T_LEFT_CURLY_BRACE);
         }
-        this->pushExpSet(Parser::E_BRIEF); // looking for keys
+        this->pushExpMap(Parser::E_KEYS); // looking for keys
 
         let priorTable = this->_table;
 
@@ -775,7 +767,7 @@ class Parser
                 let tokenId = (int) ts->moveNextId();
             }
         }
-        this->popExpSet();
+        this->popExpMap();
         if (tokenId != Lexer::T_RIGHT_CURLY_BRACE) {
             this->throwTokenError(ts->getToken(), Lexer::T_RIGHT_CURLY_BRACE);
         }

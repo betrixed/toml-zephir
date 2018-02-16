@@ -29,6 +29,7 @@ class Lexer {
     const T_LAST_TOKEN = 24; // limit of token lookup
 
     const TOML_VERSION = "0.4";
+    const USE_VERSION = "Zephir";
 
     static private _nameList = [
         "T_BAD", //0
@@ -119,11 +120,14 @@ class Lexer {
         Lexer::T_BASIC_UNESCAPED, Lexer::T_ESCAPED_CHARACTER, Lexer::T_3_APOSTROPHE
     ];
 
-    public function tomlVersion() -> string
+   static  public function getTomlVersion() -> string
     {
-        return self::TOML_VERSION;
+        return Lexer::TOML_VERSION;
     }
-
+    static  public function getUseVersion() -> string
+    {
+        return Lexer::USE_VERSION;
+    }
     static public function tokenName(int tokenId) -> string
     {
         if (tokenId > Lexer::T_LAST_TOKEN || tokenId < 0) {
@@ -132,7 +136,7 @@ class Lexer {
         return self::_nameList[tokenId];
     }
 
-    static public function getExpSet(array! idList) -> array {
+    static public function getExpMap(array! idList) -> array {
         var result, id;
         let result = [];
         for id in idList {
@@ -148,7 +152,7 @@ class Lexer {
         var list;
 
         let stream = new TokenStream();
-        stream->setExpList(new KeyTable(Lexer::Regex));
+        stream->setExpMap(new KeyTable(Lexer::Regex));
         stream->setSingles(new KeyTable(Lexer::Singles));
         stream->setUnknownId(Lexer::T_CHAR);
         stream->setNewLineId(Lexer::T_NEWLINE);

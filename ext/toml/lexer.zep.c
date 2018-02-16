@@ -93,16 +93,27 @@ ZEPHIR_INIT_CLASS(Toml_Lexer) {
 
 	zephir_declare_class_constant_string(toml_lexer_ce, SL("TOML_VERSION"), "0.4");
 
+	zephir_declare_class_constant_string(toml_lexer_ce, SL("USE_VERSION"), "Zephir");
+
 	return SUCCESS;
 
 }
 
-PHP_METHOD(Toml_Lexer, tomlVersion) {
+PHP_METHOD(Toml_Lexer, getTomlVersion) {
 
 	zval *this_ptr = getThis();
 
 
 	RETURN_STRING("0.4");
+
+}
+
+PHP_METHOD(Toml_Lexer, getUseVersion) {
+
+	zval *this_ptr = getThis();
+
+
+	RETURN_STRING("Zephir");
 
 }
 
@@ -129,12 +140,12 @@ PHP_METHOD(Toml_Lexer, tokenName) {
 		tokenId = 0;
 	}
 	zephir_read_static_property_ce(&_1, toml_lexer_ce, SL("_nameList"), PH_NOISY_CC | PH_READONLY);
-	zephir_array_fetch_long(&_2, &_1, tokenId, PH_NOISY | PH_READONLY, "toml/Lexer.zep", 132 TSRMLS_CC);
+	zephir_array_fetch_long(&_2, &_1, tokenId, PH_NOISY | PH_READONLY, "toml/Lexer.zep", 136 TSRMLS_CC);
 	RETURN_CTORW(&_2);
 
 }
 
-PHP_METHOD(Toml_Lexer, getExpSet) {
+PHP_METHOD(Toml_Lexer, getExpMap) {
 
 	zval *idList_param = NULL, result, id, *_0, _1$$3, _2$$3;
 	zval idList;
@@ -154,13 +165,13 @@ PHP_METHOD(Toml_Lexer, getExpSet) {
 
 	ZEPHIR_INIT_VAR(&result);
 	array_init(&result);
-	zephir_is_iterable(&idList, 0, "toml/Lexer.zep", 141);
+	zephir_is_iterable(&idList, 0, "toml/Lexer.zep", 145);
 	ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(&idList), _0)
 	{
 		ZEPHIR_INIT_NVAR(&id);
 		ZVAL_COPY(&id, _0);
 		zephir_read_static_property_ce(&_1$$3, toml_lexer_ce, SL("Regex"), PH_NOISY_CC | PH_READONLY);
-		zephir_array_fetch(&_2$$3, &_1$$3, &id, PH_NOISY | PH_READONLY, "toml/Lexer.zep", 139 TSRMLS_CC);
+		zephir_array_fetch(&_2$$3, &_1$$3, &id, PH_NOISY | PH_READONLY, "toml/Lexer.zep", 143 TSRMLS_CC);
 		zephir_array_update_zval(&result, &id, &_2$$3, PH_COPY | PH_SEPARATE);
 	} ZEND_HASH_FOREACH_END();
 	ZEPHIR_INIT_NVAR(&id);
@@ -205,7 +216,7 @@ PHP_METHOD(Toml_Lexer, tokenize) {
 	zephir_read_static_property_ce(&_1, toml_lexer_ce, SL("Regex"), PH_NOISY_CC | PH_READONLY);
 	ZEPHIR_CALL_METHOD(NULL, &_0, "__construct", &_2, 3, &_1);
 	zephir_check_call_status();
-	ZEPHIR_CALL_METHOD(NULL, &stream, "setexplist", NULL, 4, &_0);
+	ZEPHIR_CALL_METHOD(NULL, &stream, "setexpmap", NULL, 4, &_0);
 	zephir_check_call_status();
 	ZEPHIR_INIT_VAR(&_3);
 	object_init_ex(&_3, toml_keytable_ce);
@@ -239,7 +250,7 @@ PHP_METHOD(Toml_Lexer, tokenize) {
 		if (zephir_clone(&_10$$3, &_8$$3 TSRMLS_CC) == FAILURE) {
 			RETURN_MM();
 		}
-		zephir_array_append(&list, &_10$$3, PH_SEPARATE, "toml/Lexer.zep", 161);
+		zephir_array_append(&list, &_10$$3, PH_SEPARATE, "toml/Lexer.zep", 165);
 	}
 	ZEPHIR_CALL_METHOD(&_11, &stream, "gettoken", &_9, 11);
 	zephir_check_call_status();
@@ -247,7 +258,7 @@ PHP_METHOD(Toml_Lexer, tokenize) {
 	if (zephir_clone(&_12, &_11 TSRMLS_CC) == FAILURE) {
 		RETURN_MM();
 	}
-	zephir_array_append(&list, &_12, PH_SEPARATE, "toml/Lexer.zep", 163);
+	zephir_array_append(&list, &_12, PH_SEPARATE, "toml/Lexer.zep", 167);
 	object_init_ex(return_value, toml_tokenlist_ce);
 	ZEPHIR_CALL_METHOD(NULL, return_value, "__construct", NULL, 12, &list);
 	zephir_check_call_status();

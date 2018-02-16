@@ -7,3 +7,4 @@ compile.log
 /.temp/
 /ext/.libs/
 /ext/yosy/.libs/
+/hide/

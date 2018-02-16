@@ -45,7 +45,7 @@ ZEPHIR_INIT_CLASS(Toml_Parser) {
 
 	zend_declare_property_null(toml_parser_ce, SL("_ts"), ZEND_ACC_PRIVATE TSRMLS_CC);
 
-	zend_declare_property_long(toml_parser_ce, SL("_expSetId"), -1, ZEND_ACC_PRIVATE TSRMLS_CC);
+	zend_declare_property_null(toml_parser_ce, SL("_xid"), ZEND_ACC_PRIVATE TSRMLS_CC);
 
 	zend_declare_property_null(toml_parser_ce, SL("_expStack"), ZEND_ACC_PRIVATE TSRMLS_CC);
 
@@ -58,15 +58,80 @@ ZEPHIR_INIT_CLASS(Toml_Parser) {
 	zend_declare_property_null(toml_parser_ce, SL("_literalString"), ZEND_ACC_PUBLIC TSRMLS_CC);
 
 	toml_parser_ce->create_object = zephir_init_properties_Toml_Parser;
-	zephir_declare_class_constant_long(toml_parser_ce, SL("E_BRIEF"), 0);
+	zephir_declare_class_constant_long(toml_parser_ce, SL("E_KEYS"), 1);
 
-	zephir_declare_class_constant_long(toml_parser_ce, SL("E_FULL"), 1);
+	zephir_declare_class_constant_long(toml_parser_ce, SL("E_VALUES"), 2);
 
-	zephir_declare_class_constant_long(toml_parser_ce, SL("E_LSTRING"), 2);
+	zephir_declare_class_constant_long(toml_parser_ce, SL("E_LITERAL"), 3);
 
-	zephir_declare_class_constant_long(toml_parser_ce, SL("E_BSTRING"), 3);
+	zephir_declare_class_constant_long(toml_parser_ce, SL("E_BASIC"), 4);
 
 	return SUCCESS;
+
+}
+
+PHP_METHOD(Toml_Parser, setExpMap) {
+
+	zval *xid_param = NULL, _0$$3, _1$$3, _2$$4, _3$$4, _4$$5, _5$$5, _6$$6, _7$$6, _8;
+	zend_long xid, ZEPHIR_LAST_CALL_STATUS;
+	zval *this_ptr = getThis();
+
+	ZVAL_UNDEF(&_0$$3);
+	ZVAL_UNDEF(&_1$$3);
+	ZVAL_UNDEF(&_2$$4);
+	ZVAL_UNDEF(&_3$$4);
+	ZVAL_UNDEF(&_4$$5);
+	ZVAL_UNDEF(&_5$$5);
+	ZVAL_UNDEF(&_6$$6);
+	ZVAL_UNDEF(&_7$$6);
+	ZVAL_UNDEF(&_8);
+
+	ZEPHIR_MM_GROW();
+	zephir_fetch_params(1, 1, 0, &xid_param);
+
+	if (UNEXPECTED(Z_TYPE_P(xid_param) != IS_LONG)) {
+		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'xid' must be a int") TSRMLS_CC);
+		RETURN_MM_NULL();
+	}
+	xid = Z_LVAL_P(xid_param);
+
+
+	do {
+		if (xid == 1) {
+			zephir_read_property(&_0$$3, this_ptr, SL("_ts"), PH_NOISY_CC | PH_READONLY);
+			zephir_read_property(&_1$$3, this_ptr, SL("_briefExpressions"), PH_NOISY_CC | PH_READONLY);
+			ZEPHIR_CALL_METHOD(NULL, &_0$$3, "setexpmap", NULL, 0, &_1$$3);
+			zephir_check_call_status();
+			break;
+		}
+		if (xid == 2) {
+			zephir_read_property(&_2$$4, this_ptr, SL("_ts"), PH_NOISY_CC | PH_READONLY);
+			zephir_read_property(&_3$$4, this_ptr, SL("_fullExpressions"), PH_NOISY_CC | PH_READONLY);
+			ZEPHIR_CALL_METHOD(NULL, &_2$$4, "setexpmap", NULL, 0, &_3$$4);
+			zephir_check_call_status();
+			break;
+		}
+		if (xid == 3) {
+			zephir_read_property(&_4$$5, this_ptr, SL("_ts"), PH_NOISY_CC | PH_READONLY);
+			zephir_read_property(&_5$$5, this_ptr, SL("_literalString"), PH_NOISY_CC | PH_READONLY);
+			ZEPHIR_CALL_METHOD(NULL, &_4$$5, "setexpmap", NULL, 0, &_5$$5);
+			zephir_check_call_status();
+			break;
+		}
+		if (xid == 4) {
+			zephir_read_property(&_6$$6, this_ptr, SL("_ts"), PH_NOISY_CC | PH_READONLY);
+			zephir_read_property(&_7$$6, this_ptr, SL("_basicString"), PH_NOISY_CC | PH_READONLY);
+			ZEPHIR_CALL_METHOD(NULL, &_6$$6, "setexpmap", NULL, 0, &_7$$6);
+			zephir_check_call_status();
+			break;
+		}
+		RETURN_MM_NULL();
+	} while(0);
+
+	ZEPHIR_INIT_ZVAL_NREF(_8);
+	ZVAL_LONG(&_8, xid);
+	zephir_update_property_zval(this_ptr, SL("_xid"), &_8);
+	ZEPHIR_MM_RESTORE();
 
 }
 
@@ -74,23 +139,23 @@ ZEPHIR_INIT_CLASS(Toml_Parser) {
  * Set the expression set to the previous on the
  * expression set stack (a stack of integers) 
  */
-PHP_METHOD(Toml_Parser, popExpSet) {
+PHP_METHOD(Toml_Parser, popExpMap) {
 
-	zval value, _0;
+	zval xid, _0;
 	zend_long ZEPHIR_LAST_CALL_STATUS;
 	zval *this_ptr = getThis();
 
-	ZVAL_UNDEF(&value);
+	ZVAL_UNDEF(&xid);
 	ZVAL_UNDEF(&_0);
 
 	ZEPHIR_MM_GROW();
 
 	zephir_read_property(&_0, this_ptr, SL("_expStack"), PH_NOISY_CC | PH_READONLY);
 	ZEPHIR_MAKE_REF(&_0);
-	ZEPHIR_CALL_FUNCTION(&value, "array_pop", NULL, 13, &_0);
+	ZEPHIR_CALL_FUNCTION(&xid, "array_pop", NULL, 13, &_0);
 	ZEPHIR_UNREF(&_0);
 	zephir_check_call_status();
-	ZEPHIR_CALL_METHOD(NULL, this_ptr, "setexpset", NULL, 14, &value);
+	ZEPHIR_CALL_METHOD(NULL, this_ptr, "setexpmap", NULL, 14, &xid);
 	zephir_check_call_status();
 	ZEPHIR_MM_RESTORE();
 
@@ -101,91 +166,29 @@ PHP_METHOD(Toml_Parser, popExpSet) {
  * constant
  * @param int $value
  */
-PHP_METHOD(Toml_Parser, pushExpSet) {
+PHP_METHOD(Toml_Parser, pushExpMap) {
 
-	zval *value_param = NULL, _0;
-	zend_long value, ZEPHIR_LAST_CALL_STATUS;
+	zval *xid_param = NULL, _0;
+	zend_long xid, ZEPHIR_LAST_CALL_STATUS;
 	zval *this_ptr = getThis();
 
 	ZVAL_UNDEF(&_0);
 
 	ZEPHIR_MM_GROW();
-	zephir_fetch_params(1, 1, 0, &value_param);
+	zephir_fetch_params(1, 1, 0, &xid_param);
 
-	if (UNEXPECTED(Z_TYPE_P(value_param) != IS_LONG)) {
-		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'value' must be a int") TSRMLS_CC);
+	if (UNEXPECTED(Z_TYPE_P(xid_param) != IS_LONG)) {
+		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'xid' must be a int") TSRMLS_CC);
 		RETURN_MM_NULL();
 	}
-	value = Z_LVAL_P(value_param);
+	xid = Z_LVAL_P(xid_param);
 
 
-	zephir_read_property(&_0, this_ptr, SL("_expSetId"), PH_NOISY_CC | PH_READONLY);
+	zephir_read_property(&_0, this_ptr, SL("_xid"), PH_NOISY_CC | PH_READONLY);
 	zephir_update_property_array_append(this_ptr, SL("_expStack"), &_0 TSRMLS_CC);
-	ZVAL_LONG(&_0, value);
-	ZEPHIR_CALL_METHOD(NULL, this_ptr, "setexpset", NULL, 14, &_0);
+	ZVAL_LONG(&_0, xid);
+	ZEPHIR_CALL_METHOD(NULL, this_ptr, "setexpmap", NULL, 14, &_0);
 	zephir_check_call_status();
-	ZEPHIR_MM_RESTORE();
-
-}
-
-PHP_METHOD(Toml_Parser, setExpSet) {
-
-	zval *value_param = NULL, _0, _1$$3, _2$$3, _3$$4, _4$$4, _5$$5, _6$$5, _7$$6, _8$$6;
-	zend_long value, ZEPHIR_LAST_CALL_STATUS;
-	zval *this_ptr = getThis();
-
-	ZVAL_UNDEF(&_0);
-	ZVAL_UNDEF(&_1$$3);
-	ZVAL_UNDEF(&_2$$3);
-	ZVAL_UNDEF(&_3$$4);
-	ZVAL_UNDEF(&_4$$4);
-	ZVAL_UNDEF(&_5$$5);
-	ZVAL_UNDEF(&_6$$5);
-	ZVAL_UNDEF(&_7$$6);
-	ZVAL_UNDEF(&_8$$6);
-
-	ZEPHIR_MM_GROW();
-	zephir_fetch_params(1, 1, 0, &value_param);
-
-	if (UNEXPECTED(Z_TYPE_P(value_param) != IS_LONG)) {
-		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'value' must be a int") TSRMLS_CC);
-		RETURN_MM_NULL();
-	}
-	value = Z_LVAL_P(value_param);
-
-
-	ZEPHIR_INIT_ZVAL_NREF(_0);
-	ZVAL_LONG(&_0, value);
-	zephir_update_property_zval(this_ptr, SL("_expSetId"), &_0);
-	do {
-		if (value == 0) {
-			zephir_read_property(&_1$$3, this_ptr, SL("_ts"), PH_NOISY_CC | PH_READONLY);
-			zephir_read_property(&_2$$3, this_ptr, SL("_briefExpressions"), PH_NOISY_CC | PH_READONLY);
-			ZEPHIR_CALL_METHOD(NULL, &_1$$3, "setexplist", NULL, 0, &_2$$3);
-			zephir_check_call_status();
-			break;
-		}
-		if (value == 3) {
-			zephir_read_property(&_3$$4, this_ptr, SL("_ts"), PH_NOISY_CC | PH_READONLY);
-			zephir_read_property(&_4$$4, this_ptr, SL("_basicString"), PH_NOISY_CC | PH_READONLY);
-			ZEPHIR_CALL_METHOD(NULL, &_3$$4, "setexplist", NULL, 0, &_4$$4);
-			zephir_check_call_status();
-			break;
-		}
-		if (value == 2) {
-			zephir_read_property(&_5$$5, this_ptr, SL("_ts"), PH_NOISY_CC | PH_READONLY);
-			zephir_read_property(&_6$$5, this_ptr, SL("_literalString"), PH_NOISY_CC | PH_READONLY);
-			ZEPHIR_CALL_METHOD(NULL, &_5$$5, "setexplist", NULL, 0, &_6$$5);
-			zephir_check_call_status();
-			break;
-		}
-		zephir_read_property(&_7$$6, this_ptr, SL("_ts"), PH_NOISY_CC | PH_READONLY);
-		zephir_read_property(&_8$$6, this_ptr, SL("_fullExpressions"), PH_NOISY_CC | PH_READONLY);
-		ZEPHIR_CALL_METHOD(NULL, &_7$$6, "setexplist", NULL, 0, &_8$$6);
-		zephir_check_call_status();
-		break;
-	} while(0);
-
 	ZEPHIR_MM_RESTORE();
 
 }
@@ -231,7 +234,7 @@ PHP_METHOD(Toml_Parser, __construct) {
 	ZEPHIR_INIT_VAR(&_3);
 	object_init_ex(&_3, toml_keytable_ce);
 	zephir_read_static_property_ce(&_6, toml_lexer_ce, SL("BriefList"), PH_NOISY_CC | PH_READONLY);
-	ZEPHIR_CALL_CE_STATIC(&_4, toml_lexer_ce, "getexpset", &_5, 0, &_6);
+	ZEPHIR_CALL_CE_STATIC(&_4, toml_lexer_ce, "getexpmap", &_5, 0, &_6);
 	zephir_check_call_status();
 	ZEPHIR_CALL_METHOD(NULL, &_3, "__construct", &_1, 3, &_4);
 	zephir_check_call_status();
@@ -239,7 +242,7 @@ PHP_METHOD(Toml_Parser, __construct) {
 	ZEPHIR_INIT_VAR(&_7);
 	object_init_ex(&_7, toml_keytable_ce);
 	zephir_read_static_property_ce(&_9, toml_lexer_ce, SL("FullList"), PH_NOISY_CC | PH_READONLY);
-	ZEPHIR_CALL_CE_STATIC(&_8, toml_lexer_ce, "getexpset", &_5, 0, &_9);
+	ZEPHIR_CALL_CE_STATIC(&_8, toml_lexer_ce, "getexpmap", &_5, 0, &_9);
 	zephir_check_call_status();
 	ZEPHIR_CALL_METHOD(NULL, &_7, "__construct", &_1, 3, &_8);
 	zephir_check_call_status();
@@ -247,7 +250,7 @@ PHP_METHOD(Toml_Parser, __construct) {
 	ZEPHIR_INIT_VAR(&_10);
 	object_init_ex(&_10, toml_keytable_ce);
 	zephir_read_static_property_ce(&_12, toml_lexer_ce, SL("BasicStringList"), PH_NOISY_CC | PH_READONLY);
-	ZEPHIR_CALL_CE_STATIC(&_11, toml_lexer_ce, "getexpset", &_5, 0, &_12);
+	ZEPHIR_CALL_CE_STATIC(&_11, toml_lexer_ce, "getexpmap", &_5, 0, &_12);
 	zephir_check_call_status();
 	ZEPHIR_CALL_METHOD(NULL, &_10, "__construct", &_1, 3, &_11);
 	zephir_check_call_status();
@@ -255,7 +258,7 @@ PHP_METHOD(Toml_Parser, __construct) {
 	ZEPHIR_INIT_VAR(&_13);
 	object_init_ex(&_13, toml_keytable_ce);
 	zephir_read_static_property_ce(&_15, toml_lexer_ce, SL("LiteralStringList"), PH_NOISY_CC | PH_READONLY);
-	ZEPHIR_CALL_CE_STATIC(&_14, toml_lexer_ce, "getexpset", &_5, 0, &_15);
+	ZEPHIR_CALL_CE_STATIC(&_14, toml_lexer_ce, "getexpmap", &_5, 0, &_15);
 	zephir_check_call_status();
 	ZEPHIR_CALL_METHOD(NULL, &_13, "__construct", &_1, 3, &_14);
 	zephir_check_call_status();
@@ -281,8 +284,8 @@ PHP_METHOD(Toml_Parser, __construct) {
 	ZEPHIR_CALL_METHOD(NULL, &ts, "seteosid", NULL, 8, &_18);
 	zephir_check_call_status();
 	zephir_update_property_zval(this_ptr, SL("_ts"), &ts);
-	ZVAL_LONG(&_18, 0);
-	ZEPHIR_CALL_METHOD(NULL, this_ptr, "setexpset", NULL, 14, &_18);
+	ZVAL_LONG(&_18, 1);
+	ZEPHIR_CALL_METHOD(NULL, this_ptr, "setexpmap", NULL, 14, &_18);
 	zephir_check_call_status();
 	ZEPHIR_MM_RESTORE();
 
@@ -338,7 +341,7 @@ PHP_METHOD(Toml_Parser, parseFile) {
 		ZEPHIR_CONCAT_SV(&_2$$3, "File path not a file ", &path);
 		ZEPHIR_CALL_METHOD(NULL, &_1$$3, "__construct", NULL, 16, &_2$$3);
 		zephir_check_call_status();
-		zephir_throw_exception_debug(&_1$$3, "toml/Parser.zep", 134 TSRMLS_CC);
+		zephir_throw_exception_debug(&_1$$3, "toml/Parser.zep", 132 TSRMLS_CC);
 		ZEPHIR_MM_RESTORE();
 		return;
 	}
@@ -413,7 +416,7 @@ PHP_METHOD(Toml_Parser, parse) {
 	ZVAL_STRING(&_2, "//u");
 	zephir_preg_match(&_1, &_2, &input, &_0, 0, 0 , 0  TSRMLS_CC);
 	if (ZEPHIR_IS_FALSE_IDENTICAL(&_1)) {
-		ZEPHIR_THROW_EXCEPTION_DEBUG_STR(toml_xarrayable_ce, "The TOML input does not appear to be valid UTF-8.", "toml/Parser.zep", 154);
+		ZEPHIR_THROW_EXCEPTION_DEBUG_STR(toml_xarrayable_ce, "The TOML input does not appear to be valid UTF-8.", "toml/Parser.zep", 152);
 		return;
 	}
 	ZEPHIR_INIT_VAR(&_3);
@@ -557,8 +560,8 @@ PHP_METHOD(Toml_Parser, parseComment) {
 		ZEPHIR_CALL_METHOD(NULL, this_ptr, "throwtokenerror", NULL, 26, &_1$$3, &_2$$3);
 		zephir_check_call_status();
 	}
-	ZVAL_LONG(&_3, 3);
-	ZEPHIR_CALL_METHOD(NULL, this_ptr, "pushexpset", NULL, 0, &_3);
+	ZVAL_LONG(&_3, 1);
+	ZEPHIR_CALL_METHOD(NULL, this_ptr, "pushexpmap", NULL, 0, &_3);
 	zephir_check_call_status();
 	while (1) {
 		if (!(1)) {
@@ -575,7 +578,7 @@ PHP_METHOD(Toml_Parser, parseComment) {
 			break;
 		}
 	}
-	ZEPHIR_CALL_METHOD(NULL, this_ptr, "popexpset", NULL, 0);
+	ZEPHIR_CALL_METHOD(NULL, this_ptr, "popexpmap", NULL, 0);
 	zephir_check_call_status();
 	RETURN_MM_LONG(tokenId);
 
@@ -674,8 +677,8 @@ PHP_METHOD(Toml_Parser, parseKeyValue) {
 		ZEPHIR_CALL_METHOD(NULL, this_ptr, "throwtokenerror", NULL, 26, &_4$$5, &_5$$5);
 		zephir_check_call_status();
 	}
-	ZVAL_LONG(&_6, 1);
-	ZEPHIR_CALL_METHOD(NULL, this_ptr, "pushexpset", NULL, 0, &_6);
+	ZVAL_LONG(&_6, 2);
+	ZEPHIR_CALL_METHOD(NULL, this_ptr, "pushexpmap", NULL, 0, &_6);
 	zephir_check_call_status();
 	ZEPHIR_CALL_METHOD(&_7, ts, "movenextid", NULL, 10);
 	zephir_check_call_status();
@@ -701,7 +704,7 @@ PHP_METHOD(Toml_Parser, parseKeyValue) {
 		ZEPHIR_CALL_METHOD(NULL, &_10$$9, "offsetset", NULL, 0, &keyName, &value);
 		zephir_check_call_status();
 	}
-	ZEPHIR_CALL_METHOD(NULL, this_ptr, "popexpset", NULL, 0);
+	ZEPHIR_CALL_METHOD(NULL, this_ptr, "popexpmap", NULL, 0);
 	zephir_check_call_status();
 	ZEPHIR_CALL_METHOD(&_11, ts, "movenextid", NULL, 10);
 	zephir_check_call_status();
@@ -1050,8 +1053,8 @@ PHP_METHOD(Toml_Parser, parseBasicString) {
 
 
 
-	ZVAL_LONG(&_0, 3);
-	ZEPHIR_CALL_METHOD(NULL, this_ptr, "pushexpset", NULL, 0, &_0);
+	ZVAL_LONG(&_0, 4);
+	ZEPHIR_CALL_METHOD(NULL, this_ptr, "pushexpmap", NULL, 0, &_0);
 	zephir_check_call_status();
 	ZEPHIR_INIT_VAR(&result);
 	ZVAL_STRING(&result, "");
@@ -1105,7 +1108,7 @@ PHP_METHOD(Toml_Parser, parseBasicString) {
 		zephir_check_call_status();
 		tokenId = zephir_get_intval(&_17$$4);
 	}
-	ZEPHIR_CALL_METHOD(NULL, this_ptr, "popexpset", NULL, 0);
+	ZEPHIR_CALL_METHOD(NULL, this_ptr, "popexpmap", NULL, 0);
 	zephir_check_call_status();
 	RETURN_CCTOR(&result);
 
@@ -1157,8 +1160,8 @@ PHP_METHOD(Toml_Parser, parseMultilineBasicString) {
 		ZEPHIR_CALL_METHOD(NULL, this_ptr, "throwtokenerror", &_3, 26, &_1$$3, &_2$$3);
 		zephir_check_call_status();
 	}
-	ZVAL_LONG(&_4, 3);
-	ZEPHIR_CALL_METHOD(NULL, this_ptr, "pushexpset", NULL, 0, &_4);
+	ZVAL_LONG(&_4, 4);
+	ZEPHIR_CALL_METHOD(NULL, this_ptr, "pushexpmap", NULL, 0, &_4);
 	zephir_check_call_status();
 	ZEPHIR_INIT_VAR(&result);
 	ZVAL_STRING(&result, "");
@@ -1177,7 +1180,7 @@ PHP_METHOD(Toml_Parser, parseMultilineBasicString) {
 		}
 		do {
 			if (tokenId == 6) {
-				ZEPHIR_CALL_METHOD(NULL, this_ptr, "popexpset", &_7, 0);
+				ZEPHIR_CALL_METHOD(NULL, this_ptr, "popexpmap", &_7, 0);
 				zephir_check_call_status();
 				doLoop = 0;
 				break;
@@ -1295,8 +1298,8 @@ PHP_METHOD(Toml_Parser, parseLiteralString) {
 		ZEPHIR_CALL_METHOD(NULL, this_ptr, "throwtokenerror", NULL, 26, &_1$$3, &_2$$3);
 		zephir_check_call_status();
 	}
-	ZVAL_LONG(&_3, 2);
-	ZEPHIR_CALL_METHOD(NULL, this_ptr, "pushexpset", NULL, 0, &_3);
+	ZVAL_LONG(&_3, 3);
+	ZEPHIR_CALL_METHOD(NULL, this_ptr, "pushexpmap", NULL, 0, &_3);
 	zephir_check_call_status();
 	ZEPHIR_CALL_METHOD(&_4, ts, "movenextid", NULL, 0);
 	zephir_check_call_status();
@@ -1329,7 +1332,7 @@ PHP_METHOD(Toml_Parser, parseLiteralString) {
 		zephir_check_call_status();
 		tokenId = zephir_get_intval(&_13$$4);
 	}
-	ZEPHIR_CALL_METHOD(NULL, this_ptr, "popexpset", NULL, 0);
+	ZEPHIR_CALL_METHOD(NULL, this_ptr, "popexpmap", NULL, 0);
 	zephir_check_call_status();
 	RETURN_CTOR(&result);
 
@@ -1375,8 +1378,8 @@ PHP_METHOD(Toml_Parser, parseMultilineLiteralString) {
 		ZEPHIR_CALL_METHOD(NULL, this_ptr, "throwtokenerror", &_3, 26, &_1$$3, &_2$$3);
 		zephir_check_call_status();
 	}
-	ZVAL_LONG(&_4, 2);
-	ZEPHIR_CALL_METHOD(NULL, this_ptr, "pushexpset", NULL, 0, &_4);
+	ZVAL_LONG(&_4, 3);
+	ZEPHIR_CALL_METHOD(NULL, this_ptr, "pushexpmap", NULL, 0, &_4);
 	zephir_check_call_status();
 	ZEPHIR_INIT_VAR(&result);
 	ZVAL_STRING(&result, "");
@@ -1413,7 +1416,7 @@ PHP_METHOD(Toml_Parser, parseMultilineLiteralString) {
 		zephir_check_call_status();
 		tokenId = zephir_get_intval(&_14$$5);
 	}
-	ZEPHIR_CALL_METHOD(NULL, this_ptr, "popexpset", NULL, 0);
+	ZEPHIR_CALL_METHOD(NULL, this_ptr, "popexpmap", NULL, 0);
 	zephir_check_call_status();
 	if (tokenId != 8) {
 		ZEPHIR_CALL_METHOD(&_15$$8, ts, "gettoken", NULL, 11);
@@ -1507,8 +1510,8 @@ PHP_METHOD(Toml_Parser, parseEscapedCharacter) {
 	ZEPHIR_INIT_VAR(&_9);
 	ZVAL_STRING(&_9, "/\\\\U([0-9a-fA-F]{4})([0-9a-fA-F]{4})/");
 	zephir_preg_match(&_8, &_9, &value, &matches, 0, 0 , 0  TSRMLS_CC);
-	zephir_array_fetch_long(&_10, &matches, 1, PH_NOISY | PH_READONLY, "toml/Parser.zep", 633 TSRMLS_CC);
-	zephir_array_fetch_long(&_11, &matches, 2, PH_NOISY | PH_READONLY, "toml/Parser.zep", 633 TSRMLS_CC);
+	zephir_array_fetch_long(&_10, &matches, 1, PH_NOISY | PH_READONLY, "toml/Parser.zep", 625 TSRMLS_CC);
+	zephir_array_fetch_long(&_11, &matches, 2, PH_NOISY | PH_READONLY, "toml/Parser.zep", 625 TSRMLS_CC);
 	ZEPHIR_INIT_VAR(&_12);
 	ZEPHIR_CONCAT_SVSVS(&_12, "\"\\u", &_10, "\\u", &_11, "\"");
 	zephir_json_decode(return_value, &_12, 0 );
@@ -1657,7 +1660,7 @@ PHP_METHOD(Toml_Parser, parseArray) {
 				ZEPHIR_CONCAT_VSV(&_18$$10, &_15$$10, " at line ", &_16$$10);
 				ZEPHIR_CALL_METHOD(NULL, &_14$$10, "__construct", &_19, 16, &_18$$10);
 				zephir_check_call_status();
-				zephir_throw_exception_debug(&_14$$10, "toml/Parser.zep", 681 TSRMLS_CC);
+				zephir_throw_exception_debug(&_14$$10, "toml/Parser.zep", 673 TSRMLS_CC);
 				ZEPHIR_MM_RESTORE();
 				return;
 			}
@@ -1807,8 +1810,8 @@ PHP_METHOD(Toml_Parser, parseInlineTable) {
 		ZEPHIR_CALL_METHOD(NULL, this_ptr, "throwtokenerror", &_3, 26, &_1$$3, &_2$$3);
 		zephir_check_call_status();
 	}
-	ZVAL_LONG(&_4, 0);
-	ZEPHIR_CALL_METHOD(NULL, this_ptr, "pushexpset", NULL, 0, &_4);
+	ZVAL_LONG(&_4, 1);
+	ZEPHIR_CALL_METHOD(NULL, this_ptr, "pushexpmap", NULL, 0, &_4);
 	zephir_check_call_status();
 	ZEPHIR_OBS_VAR(&priorTable);
 	zephir_read_property(&priorTable, this_ptr, SL("_table"), PH_NOISY_CC);
@@ -1855,7 +1858,7 @@ PHP_METHOD(Toml_Parser, parseInlineTable) {
 			tokenId = zephir_get_intval(&_15$$9);
 		}
 	}
-	ZEPHIR_CALL_METHOD(NULL, this_ptr, "popexpset", NULL, 0);
+	ZEPHIR_CALL_METHOD(NULL, this_ptr, "popexpmap", NULL, 0);
 	zephir_check_call_status();
 	if (tokenId != 15) {
 		ZEPHIR_CALL_METHOD(&_16$$10, ts, "gettoken", NULL, 11);
@@ -1956,7 +1959,7 @@ PHP_METHOD(Toml_Parser, tablePathError) {
 	object_init_ex(&_3, toml_xarrayable_ce);
 	ZEPHIR_CALL_METHOD(NULL, &_3, "__construct", NULL, 16, &errMsg);
 	zephir_check_call_status();
-	zephir_throw_exception_debug(&_3, "toml/Parser.zep", 817 TSRMLS_CC);
+	zephir_throw_exception_debug(&_3, "toml/Parser.zep", 809 TSRMLS_CC);
 	ZEPHIR_MM_RESTORE();
 	return;
 
@@ -2012,7 +2015,7 @@ PHP_METHOD(Toml_Parser, getPathName) {
 
 	ZEPHIR_INIT_VAR(&result);
 	ZVAL_STRING(&result, "");
-	zephir_is_iterable(&parts, 0, "toml/Parser.zep", 849);
+	zephir_is_iterable(&parts, 0, "toml/Parser.zep", 841);
 	ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(&parts), _1, _2, _0)
 	{
 		ZEPHIR_INIT_NVAR(&idx);
@@ -2325,7 +2328,7 @@ PHP_METHOD(Toml_Parser, parseObjectPath) {
 					ZEPHIR_CONCAT_SVSV(&_33$$26, "Duplicate key path: ", &path, " line ", &_32$$26);
 					ZEPHIR_CALL_METHOD(NULL, &_31$$26, "__construct", &_34, 16, &_33$$26);
 					zephir_check_call_status();
-					zephir_throw_exception_debug(&_31$$26, "toml/Parser.zep", 975 TSRMLS_CC);
+					zephir_throw_exception_debug(&_31$$26, "toml/Parser.zep", 967 TSRMLS_CC);
 					ZEPHIR_MM_RESTORE();
 					return;
 				}
@@ -2345,7 +2348,7 @@ PHP_METHOD(Toml_Parser, parseObjectPath) {
 					ZEPHIR_CPY_WRT(&pobj, &testObj);
 				}
 			}
-			zephir_array_append(&parts, &testObj, PH_SEPARATE, "toml/Parser.zep", 987);
+			zephir_array_append(&parts, &testObj, PH_SEPARATE, "toml/Parser.zep", 979);
 			partsCt = (partsCt + 1);
 			ZEPHIR_CALL_METHOD(&_37$$19, ts, "movenextid", NULL, 10);
 			zephir_check_call_status();
@@ -2381,7 +2384,7 @@ PHP_METHOD(Toml_Parser, parseObjectPath) {
 				ZEPHIR_CONCAT_SVSV(&_45$$33, "Table path mismatch with ", &_42$$33, " line ", &_44$$33);
 				ZEPHIR_CALL_METHOD(NULL, &_41$$33, "__construct", &_34, 16, &_45$$33);
 				zephir_check_call_status();
-				zephir_throw_exception_debug(&_41$$33, "toml/Parser.zep", 1004 TSRMLS_CC);
+				zephir_throw_exception_debug(&_41$$33, "toml/Parser.zep", 996 TSRMLS_CC);
 				ZEPHIR_MM_RESTORE();
 				return;
 			}
@@ -2405,7 +2408,7 @@ PHP_METHOD(Toml_Parser, parseObjectPath) {
 				ZEPHIR_CONCAT_SVSV(&_51$$36, "Duplicate key path: [", &_48$$36, "] line ", &_50$$36);
 				ZEPHIR_CALL_METHOD(NULL, &_47$$36, "__construct", &_34, 16, &_51$$36);
 				zephir_check_call_status();
-				zephir_throw_exception_debug(&_47$$36, "toml/Parser.zep", 1013 TSRMLS_CC);
+				zephir_throw_exception_debug(&_47$$36, "toml/Parser.zep", 1005 TSRMLS_CC);
 				ZEPHIR_MM_RESTORE();
 				return;
 			}
@@ -2418,7 +2421,7 @@ PHP_METHOD(Toml_Parser, parseObjectPath) {
 				break;
 			}
 			ZEPHIR_OBS_NVAR(&testObj);
-			zephir_array_fetch_long(&testObj, &parts, i, PH_NOISY, "toml/Parser.zep", 1024 TSRMLS_CC);
+			zephir_array_fetch_long(&testObj, &parts, i, PH_NOISY, "toml/Parser.zep", 1016 TSRMLS_CC);
 			ZEPHIR_CALL_METHOD(&tag, &testObj, "gettag", &_35, 55);
 			zephir_check_call_status();
 			if (1) {
@@ -2667,7 +2670,7 @@ PHP_METHOD(Toml_Parser, unexpectedTokenError) {
 	object_init_ex(&_6, toml_xarrayable_ce);
 	ZEPHIR_CALL_METHOD(NULL, &_6, "__construct", NULL, 16, &msg);
 	zephir_check_call_status();
-	zephir_throw_exception_debug(&_6, "toml/Parser.zep", 1121 TSRMLS_CC);
+	zephir_throw_exception_debug(&_6, "toml/Parser.zep", 1113 TSRMLS_CC);
 	ZEPHIR_MM_RESTORE();
 	return;
 
@@ -2755,7 +2758,7 @@ PHP_METHOD(Toml_Parser, syntaxError) {
 	object_init_ex(&_13, toml_xarrayable_ce);
 	ZEPHIR_CALL_METHOD(NULL, &_13, "__construct", NULL, 16, &msg);
 	zephir_check_call_status();
-	zephir_throw_exception_debug(&_13, "toml/Parser.zep", 1141 TSRMLS_CC);
+	zephir_throw_exception_debug(&_13, "toml/Parser.zep", 1133 TSRMLS_CC);
 	ZEPHIR_MM_RESTORE();
 	return;
 
@@ -2763,52 +2766,20 @@ PHP_METHOD(Toml_Parser, syntaxError) {
 
 zend_object *zephir_init_properties_Toml_Parser(zend_class_entry *class_type TSRMLS_DC) {
 
-		zval _0, _2, _4, _6, _8, _1$$3, _3$$4, _5$$5, _7$$6, _9$$7;
+		zval _0, _1$$3;
 		ZVAL_UNDEF(&_0);
-	ZVAL_UNDEF(&_2);
-	ZVAL_UNDEF(&_4);
-	ZVAL_UNDEF(&_6);
-	ZVAL_UNDEF(&_8);
 	ZVAL_UNDEF(&_1$$3);
-	ZVAL_UNDEF(&_3$$4);
-	ZVAL_UNDEF(&_5$$5);
-	ZVAL_UNDEF(&_7$$6);
-	ZVAL_UNDEF(&_9$$7);
 
 		ZEPHIR_MM_GROW();
 	
 	{
 		zval local_this_ptr, *this_ptr = &local_this_ptr;
 		ZEPHIR_CREATE_OBJECT(this_ptr, class_type);
-		zephir_read_property(&_0, this_ptr, SL("_literalString"), PH_NOISY_CC | PH_READONLY);
+		zephir_read_property(&_0, this_ptr, SL("_expStack"), PH_NOISY_CC | PH_READONLY);
 		if (Z_TYPE_P(&_0) == IS_NULL) {
 			ZEPHIR_INIT_VAR(&_1$$3);
 			array_init(&_1$$3);
-			zephir_update_property_zval(this_ptr, SL("_literalString"), &_1$$3);
-		}
-		zephir_read_property(&_2, this_ptr, SL("_basicString"), PH_NOISY_CC | PH_READONLY);
-		if (Z_TYPE_P(&_2) == IS_NULL) {
-			ZEPHIR_INIT_VAR(&_3$$4);
-			array_init(&_3$$4);
-			zephir_update_property_zval(this_ptr, SL("_basicString"), &_3$$4);
-		}
-		zephir_read_property(&_4, this_ptr, SL("_fullExpressions"), PH_NOISY_CC | PH_READONLY);
-		if (Z_TYPE_P(&_4) == IS_NULL) {
-			ZEPHIR_INIT_VAR(&_5$$5);
-			array_init(&_5$$5);
-			zephir_update_property_zval(this_ptr, SL("_fullExpressions"), &_5$$5);
-		}
-		zephir_read_property(&_6, this_ptr, SL("_briefExpressions"), PH_NOISY_CC | PH_READONLY);
-		if (Z_TYPE_P(&_6) == IS_NULL) {
-			ZEPHIR_INIT_VAR(&_7$$6);
-			array_init(&_7$$6);
-			zephir_update_property_zval(this_ptr, SL("_briefExpressions"), &_7$$6);
-		}
-		zephir_read_property(&_8, this_ptr, SL("_expStack"), PH_NOISY_CC | PH_READONLY);
-		if (Z_TYPE_P(&_8) == IS_NULL) {
-			ZEPHIR_INIT_VAR(&_9$$7);
-			array_init(&_9$$7);
-			zephir_update_property_zval(this_ptr, SL("_expStack"), &_9$$7);
+			zephir_update_property_zval(this_ptr, SL("_expStack"), &_1$$3);
 		}
 		ZEPHIR_MM_RESTORE();
 		return Z_OBJ_P(this_ptr);
