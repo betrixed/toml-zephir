@@ -132,45 +132,50 @@ class Lexer {
 
     static public function getAllSingles() -> <KeyTable> {
         if empty Lexer::_AllSingles {
-            let Lexer::_AllSingles = new KeyTable();
-            Lexer::_AllSingles->offsetSet("=",Lexer::T_EQUAL);
-            Lexer::_AllSingles->offsetSet("[",Lexer::T_LEFT_SQUARE_BRACE);
-            Lexer::_AllSingles->offsetSet("]",Lexer::T_RIGHT_SQUARE_BRACE);
-            Lexer::_AllSingles->offsetSet(".",Lexer::T_DOT);
-            Lexer::_AllSingles->offsetSet(",",Lexer::T_COMMA);
-            Lexer::_AllSingles->offsetSet("\"",Lexer::T_QUOTATION_MARK);
-            Lexer::_AllSingles->offsetSet(".",Lexer::T_DOT);
-            Lexer::_AllSingles->offsetSet("{",Lexer::T_LEFT_CURLY_BRACE);
-            Lexer::_AllSingles->offsetSet("}",Lexer::T_RIGHT_CURLY_BRACE);
-            Lexer::_AllSingles->offsetSet("'",Lexer::T_APOSTROPHE);
-            Lexer::_AllSingles->offsetSet("#",Lexer::T_HASH);
-            Lexer::_AllSingles->offsetSet("\\",Lexer::T_ESCAPE);
+            var kt;
+            let kt = new KeyTable();
+            kt->offsetSet("=",Lexer::T_EQUAL);
+            kt->offsetSet("[",Lexer::T_LEFT_SQUARE_BRACE);
+            kt->offsetSet("]",Lexer::T_RIGHT_SQUARE_BRACE);
+            kt->offsetSet(".",Lexer::T_DOT);
+            kt->offsetSet(",",Lexer::T_COMMA);
+            kt->offsetSet("\"",Lexer::T_QUOTATION_MARK);
+            kt->offsetSet(".",Lexer::T_DOT);
+            kt->offsetSet("{",Lexer::T_LEFT_CURLY_BRACE);
+            kt->offsetSet("}",Lexer::T_RIGHT_CURLY_BRACE);
+            kt->offsetSet("'",Lexer::T_APOSTROPHE);
+            kt->offsetSet("#",Lexer::T_HASH);
+            kt->offsetSet("\\",Lexer::T_ESCAPE);
+            let Lexer::_AllSingles = kt;
         }
         return Lexer::_AllSingles;
     }
     static public function getAllRegex() -> <KeyTable> {
         if empty Lexer::_AllRegExp {
-            let Lexer::_AllRegExp = new KeyTable();
-            Lexer::_AllRegExp->offsetSet(Lexer::T_EQUAL,"/^(=)/");
-            Lexer::_AllRegExp->offsetSet(Lexer::T_BOOLEAN,"/^(true|false)/");
-            Lexer::_AllRegExp->offsetSet(Lexer::T_DATE_TIME,"/^(\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{6})?(Z|-\\d{2}:\\d{2})?)?)/");
-            Lexer::_AllRegExp->offsetSet(Lexer::T_FLOAT,"/^([+-]?((((\\d_?)+[\\.]?(\\d_?)*)[eE][+-]?(\\d_?)+)|((\\d_?)+[\\.](\\d_?)+)))/");
-            Lexer::_AllRegExp->offsetSet(Lexer::T_INTEGER,"/^([+-]?(\\d_?)+)/");
-            Lexer::_AllRegExp->offsetSet(Lexer::T_3_QUOTATION_MARK,"/^(\"\"\")/");
-            Lexer::_AllRegExp->offsetSet(Lexer::T_QUOTATION_MARK,"/^(\")/");
-            Lexer::_AllRegExp->offsetSet(Lexer::T_3_APOSTROPHE,"/^(\'\'\')/");
-            Lexer::_AllRegExp->offsetSet(Lexer::T_APOSTROPHE,"/^(\')/");
-            Lexer::_AllRegExp->offsetSet(Lexer::T_HASH,"/^(#)/");
-            Lexer::_AllRegExp->offsetSet(Lexer::T_SPACE,"/^(\\s+)/");
-            Lexer::_AllRegExp->offsetSet(Lexer::T_LEFT_SQUARE_BRACE,"/^(\\[)/");
-            Lexer::_AllRegExp->offsetSet(Lexer::T_RIGHT_SQUARE_BRACE,"/^(\\])/");
-            Lexer::_AllRegExp->offsetSet(Lexer::T_LEFT_CURLY_BRACE,"/^(\\{)/");
-            Lexer::_AllRegExp->offsetSet(Lexer::T_RIGHT_CURLY_BRACE,"/^(\\})/");
-            Lexer::_AllRegExp->offsetSet(Lexer::T_COMMA,"/^(,)/");
-            Lexer::_AllRegExp->offsetSet(Lexer::T_DOT,"/^(\\.)/");
-            Lexer::_AllRegExp->offsetSet(Lexer::T_UNQUOTED_KEY,"/^([-A-Z_a-z0-9]+)/");
-            Lexer::_AllRegExp->offsetSet(Lexer::T_ESCAPED_CHARACTER,"/^(\\\\(b|t|n|f|r|\"|\\\\|u[0-9AaBbCcDdEeFf]{4,4}|U[0-9AaBbCcDdEeFf]{8,8}))/");
-            Lexer::_AllRegExp->offsetSet(Lexer::T_BASIC_UNESCAPED,"/^([\\x{20}-\\x{21}\\x{23}-\\x{26}\\x{28}-\\x{5A}\\x{5E}-\\x{10FFFF}]+)/u");
+            var kt;
+            let kt = new KeyTable();
+            
+            kt->offsetSet(Lexer::T_EQUAL,"/^(=)/");
+            kt->offsetSet(Lexer::T_BOOLEAN,"/^(true|false)/");
+            kt->offsetSet(Lexer::T_DATE_TIME,"/^(\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{6})?(Z|-\\d{2}:\\d{2})?)?)/");
+            kt->offsetSet(Lexer::T_FLOAT,"/^([+-]?((((\\d_?)+[\\.]?(\\d_?)*)[eE][+-]?(\\d_?)+)|((\\d_?)+[\\.](\\d_?)+)))/");
+            kt->offsetSet(Lexer::T_INTEGER,"/^([+-]?(\\d_?)+)/");
+            kt->offsetSet(Lexer::T_3_QUOTATION_MARK,"/^(\"\"\")/");
+            kt->offsetSet(Lexer::T_QUOTATION_MARK,"/^(\")/");
+            kt->offsetSet(Lexer::T_3_APOSTROPHE,"/^(\'\'\')/");
+            kt->offsetSet(Lexer::T_APOSTROPHE,"/^(\')/");
+            kt->offsetSet(Lexer::T_HASH,"/^(#)/");
+            kt->offsetSet(Lexer::T_SPACE,"/^(\\s+)/");
+            kt->offsetSet(Lexer::T_LEFT_SQUARE_BRACE,"/^(\\[)/");
+            kt->offsetSet(Lexer::T_RIGHT_SQUARE_BRACE,"/^(\\])/");
+            kt->offsetSet(Lexer::T_LEFT_CURLY_BRACE,"/^(\\{)/");
+            kt->offsetSet(Lexer::T_RIGHT_CURLY_BRACE,"/^(\\})/");
+            kt->offsetSet(Lexer::T_COMMA,"/^(,)/");
+            kt->offsetSet(Lexer::T_DOT,"/^(\\.)/");
+            kt->offsetSet(Lexer::T_UNQUOTED_KEY,"/^([-A-Z_a-z0-9]+)/");
+            kt->offsetSet(Lexer::T_ESCAPED_CHARACTER,"/^(\\\\(b|t|n|f|r|\"|\\\\|u[0-9AaBbCcDdEeFf]{4,4}|U[0-9AaBbCcDdEeFf]{8,8}))/");
+            kt->offsetSet(Lexer::T_BASIC_UNESCAPED,"/^([\\x{20}-\\x{21}\\x{23}-\\x{26}\\x{28}-\\x{5A}\\x{5E}-\\x{10FFFF}]+)/u");
+            let Lexer::_AllRegExp = kt;
         }
         return Lexer::_AllRegExp;
     }

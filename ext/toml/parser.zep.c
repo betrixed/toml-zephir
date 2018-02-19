@@ -110,7 +110,7 @@ PHP_METHOD(Toml_Parser, popExpSet) {
 		zephir_update_property_zval(this_ptr, SL("_stackTop"), &_2$$3);
 		RETURN_MM_NULL();
 	}
-	ZEPHIR_THROW_EXCEPTION_DEBUG_STR(toml_xarrayable_ce, "popExpSet on empty stack", "toml/Parser.zep", 66);
+	ZEPHIR_THROW_EXCEPTION_DEBUG_STR(toml_xarrayable_ce, "popExpSet on empty stack", "toml/Parser.zep", 60);
 	return;
 
 }
@@ -243,7 +243,7 @@ PHP_METHOD(Toml_Parser, getExpSet) {
 			zephir_check_call_status();
 			break;
 		}
-		ZEPHIR_THROW_EXCEPTION_DEBUG_STR(toml_xarrayable_ce, "Not a defined table constant for getExpSet", "toml/Parser.zep", 128);
+		ZEPHIR_THROW_EXCEPTION_DEBUG_STR(toml_xarrayable_ce, "Not a defined table constant for getExpSet", "toml/Parser.zep", 122);
 		return;
 	} while(0);
 
@@ -438,7 +438,7 @@ PHP_METHOD(Toml_Parser, parseFile) {
 		ZEPHIR_CONCAT_SV(&_2$$3, "File path not a file ", &path);
 		ZEPHIR_CALL_METHOD(NULL, &_1$$3, "__construct", NULL, 18, &_2$$3);
 		zephir_check_call_status();
-		zephir_throw_exception_debug(&_1$$3, "toml/Parser.zep", 188 TSRMLS_CC);
+		zephir_throw_exception_debug(&_1$$3, "toml/Parser.zep", 182 TSRMLS_CC);
 		ZEPHIR_MM_RESTORE();
 		return;
 	}
@@ -497,7 +497,7 @@ PHP_METHOD(Toml_Parser, prepareInput) {
 	ZVAL_STRING(&_2, "//u");
 	zephir_preg_match(&_1, &_2, input, &_0, 0, 0 , 0  TSRMLS_CC);
 	if (ZEPHIR_IS_FALSE_IDENTICAL(&_1)) {
-		ZEPHIR_THROW_EXCEPTION_DEBUG_STR(toml_xarrayable_ce, "The TOML input does not appear to be valid UTF-8.", "toml/Parser.zep", 204);
+		ZEPHIR_THROW_EXCEPTION_DEBUG_STR(toml_xarrayable_ce, "The TOML input does not appear to be valid UTF-8.", "toml/Parser.zep", 198);
 		return;
 	}
 	ZEPHIR_INIT_VAR(&_3);
@@ -684,7 +684,7 @@ PHP_METHOD(Toml_Parser, parseComment) {
 		ZEPHIR_CALL_METHOD(NULL, this_ptr, "throwtokenerror", NULL, 29, &_1$$3, &_2$$3);
 		zephir_check_call_status();
 	}
-	ZVAL_LONG(&_3, 0);
+	ZVAL_LONG(&_3, 3);
 	ZEPHIR_CALL_METHOD(NULL, this_ptr, "pushexpset", NULL, 0, &_3);
 	zephir_check_call_status();
 	while (1) {
@@ -1140,8 +1140,7 @@ PHP_METHOD(Toml_Parser, parseFloat) {
 
 }
 
-/** In path parsing, we may want to keep quotes, because they can be used
- *  to enclose a '.' as a none separator. 
+/**
  * @param TokenStream $ts
  * @param type $stripQuote
  * @return string
@@ -1630,12 +1629,14 @@ PHP_METHOD(Toml_Parser, parseEscapedCharacter) {
 		zephir_json_decode(return_value, &_7$$12, 0 );
 		RETURN_MM();
 	}
+	ZEPHIR_INIT_VAR(&matches);
+	ZVAL_NULL(&matches);
 	ZEPHIR_INIT_VAR(&_8);
 	ZEPHIR_INIT_VAR(&_9);
 	ZVAL_STRING(&_9, "/\\\\U([0-9a-fA-F]{4})([0-9a-fA-F]{4})/");
 	zephir_preg_match(&_8, &_9, &value, &matches, 0, 0 , 0  TSRMLS_CC);
-	zephir_array_fetch_long(&_10, &matches, 1, PH_NOISY | PH_READONLY, "toml/Parser.zep", 684 TSRMLS_CC);
-	zephir_array_fetch_long(&_11, &matches, 2, PH_NOISY | PH_READONLY, "toml/Parser.zep", 684 TSRMLS_CC);
+	zephir_array_fetch_long(&_10, &matches, 1, PH_NOISY | PH_READONLY, "toml/Parser.zep", 678 TSRMLS_CC);
+	zephir_array_fetch_long(&_11, &matches, 2, PH_NOISY | PH_READONLY, "toml/Parser.zep", 678 TSRMLS_CC);
 	ZEPHIR_INIT_VAR(&_12);
 	ZEPHIR_CONCAT_SVSVS(&_12, "\"\\u", &_10, "\\u", &_11, "\"");
 	zephir_json_decode(return_value, &_12, 0 );
@@ -1668,8 +1669,8 @@ PHP_METHOD(Toml_Parser, parseDatetime) {
 
 /**
  * Recursive call of itself.
- * @param \Tomlmfony\Toml\TokenStream $ts
- * @return array
+ * @param \Toml\TokenStream $ts
+ * @return ValueList
  */
 PHP_METHOD(Toml_Parser, parseArray) {
 
@@ -1784,7 +1785,7 @@ PHP_METHOD(Toml_Parser, parseArray) {
 				ZEPHIR_CONCAT_VSV(&_18$$10, &_15$$10, " at line ", &_16$$10);
 				ZEPHIR_CALL_METHOD(NULL, &_14$$10, "__construct", &_19, 18, &_18$$10);
 				zephir_check_call_status();
-				zephir_throw_exception_debug(&_14$$10, "toml/Parser.zep", 732 TSRMLS_CC);
+				zephir_throw_exception_debug(&_14$$10, "toml/Parser.zep", 726 TSRMLS_CC);
 				ZEPHIR_MM_RESTORE();
 				return;
 			}
@@ -1884,6 +1885,7 @@ PHP_METHOD(Toml_Parser, pushWorkTable) {
 		ZEPHIR_CALL_METHOD(NULL, &work, "offsetset", NULL, 0, keyName, &pushed);
 		zephir_check_call_status();
 		zephir_update_property_zval(this_ptr, SL("_table"), &pushed);
+		RETURN_MM_NULL();
 	}
 	ZEPHIR_CALL_METHOD(&_1, &work, "offsetget", NULL, 0, keyName);
 	zephir_check_call_status();
@@ -2083,7 +2085,7 @@ PHP_METHOD(Toml_Parser, tablePathError) {
 	object_init_ex(&_3, toml_xarrayable_ce);
 	ZEPHIR_CALL_METHOD(NULL, &_3, "__construct", NULL, 18, &errMsg);
 	zephir_check_call_status();
-	zephir_throw_exception_debug(&_3, "toml/Parser.zep", 868 TSRMLS_CC);
+	zephir_throw_exception_debug(&_3, "toml/Parser.zep", 858 TSRMLS_CC);
 	ZEPHIR_MM_RESTORE();
 	return;
 
@@ -2139,7 +2141,7 @@ PHP_METHOD(Toml_Parser, getPathName) {
 
 	ZEPHIR_INIT_VAR(&result);
 	ZVAL_STRING(&result, "");
-	zephir_is_iterable(&parts, 0, "toml/Parser.zep", 900);
+	zephir_is_iterable(&parts, 0, "toml/Parser.zep", 890);
 	ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(&parts), _1, _2, _0)
 	{
 		ZEPHIR_INIT_NVAR(&idx);
@@ -2452,7 +2454,7 @@ PHP_METHOD(Toml_Parser, parseObjectPath) {
 					ZEPHIR_CONCAT_SVSV(&_33$$26, "Duplicate key path: ", &path, " line ", &_32$$26);
 					ZEPHIR_CALL_METHOD(NULL, &_31$$26, "__construct", &_34, 18, &_33$$26);
 					zephir_check_call_status();
-					zephir_throw_exception_debug(&_31$$26, "toml/Parser.zep", 1026 TSRMLS_CC);
+					zephir_throw_exception_debug(&_31$$26, "toml/Parser.zep", 1016 TSRMLS_CC);
 					ZEPHIR_MM_RESTORE();
 					return;
 				}
@@ -2472,7 +2474,7 @@ PHP_METHOD(Toml_Parser, parseObjectPath) {
 					ZEPHIR_CPY_WRT(&pobj, &testObj);
 				}
 			}
-			zephir_array_append(&parts, &testObj, PH_SEPARATE, "toml/Parser.zep", 1038);
+			zephir_array_append(&parts, &testObj, PH_SEPARATE, "toml/Parser.zep", 1028);
 			partsCt = (partsCt + 1);
 			ZEPHIR_CALL_METHOD(&_37$$19, ts, "movenextid", NULL, 12);
 			zephir_check_call_status();
@@ -2508,7 +2510,7 @@ PHP_METHOD(Toml_Parser, parseObjectPath) {
 				ZEPHIR_CONCAT_SVSV(&_45$$33, "Table path mismatch with ", &_42$$33, " line ", &_44$$33);
 				ZEPHIR_CALL_METHOD(NULL, &_41$$33, "__construct", &_34, 18, &_45$$33);
 				zephir_check_call_status();
-				zephir_throw_exception_debug(&_41$$33, "toml/Parser.zep", 1055 TSRMLS_CC);
+				zephir_throw_exception_debug(&_41$$33, "toml/Parser.zep", 1045 TSRMLS_CC);
 				ZEPHIR_MM_RESTORE();
 				return;
 			}
@@ -2532,7 +2534,7 @@ PHP_METHOD(Toml_Parser, parseObjectPath) {
 				ZEPHIR_CONCAT_SVSV(&_51$$36, "Duplicate key path: [", &_48$$36, "] line ", &_50$$36);
 				ZEPHIR_CALL_METHOD(NULL, &_47$$36, "__construct", &_34, 18, &_51$$36);
 				zephir_check_call_status();
-				zephir_throw_exception_debug(&_47$$36, "toml/Parser.zep", 1064 TSRMLS_CC);
+				zephir_throw_exception_debug(&_47$$36, "toml/Parser.zep", 1054 TSRMLS_CC);
 				ZEPHIR_MM_RESTORE();
 				return;
 			}
@@ -2545,7 +2547,7 @@ PHP_METHOD(Toml_Parser, parseObjectPath) {
 				break;
 			}
 			ZEPHIR_OBS_NVAR(&testObj);
-			zephir_array_fetch_long(&testObj, &parts, i, PH_NOISY, "toml/Parser.zep", 1075 TSRMLS_CC);
+			zephir_array_fetch_long(&testObj, &parts, i, PH_NOISY, "toml/Parser.zep", 1065 TSRMLS_CC);
 			ZEPHIR_CALL_METHOD(&tag, &testObj, "gettag", &_35, 58);
 			zephir_check_call_status();
 			if (1) {
@@ -2794,7 +2796,7 @@ PHP_METHOD(Toml_Parser, unexpectedTokenError) {
 	object_init_ex(&_6, toml_xarrayable_ce);
 	ZEPHIR_CALL_METHOD(NULL, &_6, "__construct", NULL, 18, &msg);
 	zephir_check_call_status();
-	zephir_throw_exception_debug(&_6, "toml/Parser.zep", 1172 TSRMLS_CC);
+	zephir_throw_exception_debug(&_6, "toml/Parser.zep", 1162 TSRMLS_CC);
 	ZEPHIR_MM_RESTORE();
 	return;
 
@@ -2882,7 +2884,7 @@ PHP_METHOD(Toml_Parser, syntaxError) {
 	object_init_ex(&_13, toml_xarrayable_ce);
 	ZEPHIR_CALL_METHOD(NULL, &_13, "__construct", NULL, 18, &msg);
 	zephir_check_call_status();
-	zephir_throw_exception_debug(&_13, "toml/Parser.zep", 1192 TSRMLS_CC);
+	zephir_throw_exception_debug(&_13, "toml/Parser.zep", 1182 TSRMLS_CC);
 	ZEPHIR_MM_RESTORE();
 	return;
 

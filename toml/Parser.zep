@@ -14,12 +14,6 @@ namespace Toml;
  */
 class Parser
 {
-
-    // Waiting for a test case that shows $useKeyStore is needed
-    //private useKeyStore = false;
-    //private keys = []; //usage controlled by $useKeyStore
-    //private currentKeyPrefix = ''; //usage controlled by $useKeyStore
-
     const E_KEY = 0;
     const E_VALUE = 1;
     const E_LSTRING = 2;
@@ -28,7 +22,7 @@ class Parser
 
     private _root = null; // root Table object
     private _table = null; // dyanamic reference to current Table object
-// For regex table stack
+// Token stream
     private _ts = null;
 
  // Current regex table type
@@ -273,7 +267,7 @@ class Parser
             this->throwTokenError(ts->getToken(), tokenId);
         }
         // parsing a comment so use basic string expression set
-        this->pushExpSet(Parser::E_KEY);
+        this->pushExpSet(Parser::E_BSTRING);
         while (true) {
             let tokenId = (int) ts->moveNextId();
             if (tokenId == Lexer::T_NEWLINE) || (tokenId == Lexer::T_EOS) {
@@ -430,6 +424,7 @@ class Parser
         return result;
     }
 
+
     private function parseInteger(<TokenStream> ts) -> int
     {
         var value;
@@ -474,8 +469,7 @@ class Parser
         return floatval(value);
     }
 
-    /** In path parsing, we may want to keep quotes, because they can be used
-     *  to enclose a '.' as a none separator. 
+    /**
      * @param TokenStream $ts
      * @param type $stripQuote
      * @return string
@@ -677,7 +671,7 @@ class Parser
             return json_decode("\"" . value . "\"");
         }
 
-        var matches;
+        var matches = null;
         //echo "U match " . value . PHP_EOL;
         preg_match("/\\\\U([0-9a-fA-F]{4})([0-9a-fA-F]{4})/", value, matches);
 
@@ -693,8 +687,8 @@ class Parser
 
     /**
      * Recursive call of itself.
-     * @param \Tomlmfony\Toml\TokenStream $ts
-     * @return array
+     * @param \Toml\TokenStream $ts
+     * @return ValueList
      */
     private function parseArray(<TokenStream> ts) -> <ValueList>
     {
@@ -779,6 +773,7 @@ class Parser
         	let pushed = new KeyTable();
             work->offsetSet(keyName, pushed);
             let this->_table = pushed;
+            return;
         }
         // TODO: Else or Assert??
         let this->_table = work->offsetGet(keyName);
@@ -798,11 +793,6 @@ class Parser
         let priorTable = this->_table;
 
         this->pushWorkTable(keyName);
-
-        /*if (this->useKeyStore) {
-            $priorcurrentKeyPrefix = this->currentKeyPrefix;
-            this->currentKeyPrefix = this->currentKeyPrefix . $keyName . ".";
-        }*/
 
         let tokenId = (int) ts->moveNextId();
         if (tokenId == Lexer::T_SPACE) {
