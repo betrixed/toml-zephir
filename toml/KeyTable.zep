@@ -35,12 +35,17 @@ final class KeyTable implements Arrayable
     public _store;
     private _tag;
 
-    public final function __construct(array seed = null)
+    public final function __construct(var seed = null)
     {
-        
-        if ! empty seed {
+        if is_object(seed) && (seed instanceof \Toml\KeyTable) {
             var key, value;
-        	for key, value in seed {
+            for key,value in seed->_store {
+                let this->_store[key] = value;
+            }
+        }
+        elseif gettype(seed) === "array" {
+            var key, value;
+            for key, value in seed {
                 let this->_store[key] = value;
             }
         } else {

@@ -130,7 +130,7 @@ PHP_METHOD(Toml_ValueList, offsetSet) {
 		zephir_read_property(&_3$$4, this_ptr, SL("_type"), PH_NOISY_CC | PH_READONLY);
 		ZEPHIR_INIT_VAR(&_4$$4);
 		ZEPHIR_CONCAT_SVSV(&_4$$4, "Type ", &vtype, " cannot be added to ValueList of ", &_3$$4);
-		ZEPHIR_CALL_METHOD(NULL, &_2$$4, "__construct", NULL, 16, &_4$$4);
+		ZEPHIR_CALL_METHOD(NULL, &_2$$4, "__construct", NULL, 18, &_4$$4);
 		zephir_check_call_status();
 		zephir_throw_exception_debug(&_2$$4, "toml/ValueList.zep", 41 TSRMLS_CC);
 		ZEPHIR_MM_RESTORE();

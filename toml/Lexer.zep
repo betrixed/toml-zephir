@@ -74,30 +74,10 @@ class Lexer {
         "\\" : Lexer::T_ESCAPE
     ];
 
-    // Zephir cannot parse class constants as keys in key:value
-    static public Regex = [
-        1 : "/^(=)/",
-        2 : "/^(true|false)/",
-        3 : "/^(\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{6})?(Z|-\\d{2}:\\d{2})?)?)/",
-        22 : "/^([+-]?((((\\d_?)+[\\.]?(\\d_?)*)[eE][+-]?(\\d_?)+)|((\\d_?)+[\\.](\\d_?)+)))/",
-        5 : "/^([+-]?(\\d_?)+)/",
-        6 : "/^(\"\"\")/",
-        7 : "/^(\")/",
-        8 : "/^(\'\'\')/",
-        9 : "/^(\')/",
-        23 : "/^(#)/",
-        11 : "/^(\\s+)/",
-        12: "/^(\\[)/",
-        13 : "/^(\\])/",
-        14 : "/^(\\{)/",
-        15 : "/^(\\})/",
-        16 : "/^(,)/",
-        17 : "/^(\\.)/",
-        18 : "/^([-A-Z_a-z0-9]+)/",
-        19 : "/^(\\\\(b|t|n|f|r|\"|\\\\|u[0-9AaBbCcDdEeFf]{4,4}|U[0-9AaBbCcDdEeFf]{8,8}))/",
-        21 : "/^([\\x{20}-\\x{21}\\x{23}-\\x{26}\\x{28}-\\x{5A}\\x{5E}-\\x{10FFFF}]+)/u"
-    ];
 
+    static private _AllRegExp;
+    static private _AllSingles;
+    
     static public BriefList = [
         Lexer::T_SPACE,
         Lexer::T_UNQUOTED_KEY,
@@ -136,15 +116,65 @@ class Lexer {
         return self::_nameList[tokenId];
     }
 
-    static public function getExpMap(array! idList) -> array {
+    static public function getExpSet(array! idList) -> <KeyTable> {
+        var all;
         var result, id;
-        let result = [];
+
+        let all = Lexer::getAllRegex();
+        
+        let result = new KeyTable();
+        
         for id in idList {
-            let result[id] = Lexer::Regex[id];
+            result->offsetSet(id,all->offsetGet(id));
         }
         return result;
     }
-    public function tokenize(string input) -> <TokenList>
+
+    static public function getAllSingles() -> <KeyTable> {
+        if empty Lexer::_AllSingles {
+            let Lexer::_AllSingles = new KeyTable();
+            Lexer::_AllSingles->offsetSet("=",Lexer::T_EQUAL);
+            Lexer::_AllSingles->offsetSet("[",Lexer::T_LEFT_SQUARE_BRACE);
+            Lexer::_AllSingles->offsetSet("]",Lexer::T_RIGHT_SQUARE_BRACE);
+            Lexer::_AllSingles->offsetSet(".",Lexer::T_DOT);
+            Lexer::_AllSingles->offsetSet(",",Lexer::T_COMMA);
+            Lexer::_AllSingles->offsetSet("\"",Lexer::T_QUOTATION_MARK);
+            Lexer::_AllSingles->offsetSet(".",Lexer::T_DOT);
+            Lexer::_AllSingles->offsetSet("{",Lexer::T_LEFT_CURLY_BRACE);
+            Lexer::_AllSingles->offsetSet("}",Lexer::T_RIGHT_CURLY_BRACE);
+            Lexer::_AllSingles->offsetSet("'",Lexer::T_APOSTROPHE);
+            Lexer::_AllSingles->offsetSet("#",Lexer::T_HASH);
+            Lexer::_AllSingles->offsetSet("\\",Lexer::T_ESCAPE);
+        }
+        return Lexer::_AllSingles;
+    }
+    static public function getAllRegex() -> <KeyTable> {
+        if empty Lexer::_AllRegExp {
+            let Lexer::_AllRegExp = new KeyTable();
+            Lexer::_AllRegExp->offsetSet(Lexer::T_EQUAL,"/^(=)/");
+            Lexer::_AllRegExp->offsetSet(Lexer::T_BOOLEAN,"/^(true|false)/");
+            Lexer::_AllRegExp->offsetSet(Lexer::T_DATE_TIME,"/^(\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{6})?(Z|-\\d{2}:\\d{2})?)?)/");
+            Lexer::_AllRegExp->offsetSet(Lexer::T_FLOAT,"/^([+-]?((((\\d_?)+[\\.]?(\\d_?)*)[eE][+-]?(\\d_?)+)|((\\d_?)+[\\.](\\d_?)+)))/");
+            Lexer::_AllRegExp->offsetSet(Lexer::T_INTEGER,"/^([+-]?(\\d_?)+)/");
+            Lexer::_AllRegExp->offsetSet(Lexer::T_3_QUOTATION_MARK,"/^(\"\"\")/");
+            Lexer::_AllRegExp->offsetSet(Lexer::T_QUOTATION_MARK,"/^(\")/");
+            Lexer::_AllRegExp->offsetSet(Lexer::T_3_APOSTROPHE,"/^(\'\'\')/");
+            Lexer::_AllRegExp->offsetSet(Lexer::T_APOSTROPHE,"/^(\')/");
+            Lexer::_AllRegExp->offsetSet(Lexer::T_HASH,"/^(#)/");
+            Lexer::_AllRegExp->offsetSet(Lexer::T_SPACE,"/^(\\s+)/");
+            Lexer::_AllRegExp->offsetSet(Lexer::T_LEFT_SQUARE_BRACE,"/^(\\[)/");
+            Lexer::_AllRegExp->offsetSet(Lexer::T_RIGHT_SQUARE_BRACE,"/^(\\])/");
+            Lexer::_AllRegExp->offsetSet(Lexer::T_LEFT_CURLY_BRACE,"/^(\\{)/");
+            Lexer::_AllRegExp->offsetSet(Lexer::T_RIGHT_CURLY_BRACE,"/^(\\})/");
+            Lexer::_AllRegExp->offsetSet(Lexer::T_COMMA,"/^(,)/");
+            Lexer::_AllRegExp->offsetSet(Lexer::T_DOT,"/^(\\.)/");
+            Lexer::_AllRegExp->offsetSet(Lexer::T_UNQUOTED_KEY,"/^([-A-Z_a-z0-9]+)/");
+            Lexer::_AllRegExp->offsetSet(Lexer::T_ESCAPED_CHARACTER,"/^(\\\\(b|t|n|f|r|\"|\\\\|u[0-9AaBbCcDdEeFf]{4,4}|U[0-9AaBbCcDdEeFf]{8,8}))/");
+            Lexer::_AllRegExp->offsetSet(Lexer::T_BASIC_UNESCAPED,"/^([\\x{20}-\\x{21}\\x{23}-\\x{26}\\x{28}-\\x{5A}\\x{5E}-\\x{10FFFF}]+)/u");
+        }
+        return Lexer::_AllRegExp;
+    }
+     public function tokenize(string input) -> <TokenList>
     {
         // convert string into array of tokens
         // clone each from the stream
@@ -152,8 +182,8 @@ class Lexer {
         var list;
 
         let stream = new TokenStream();
-        stream->setExpMap(new KeyTable(Lexer::Regex));
-        stream->setSingles(new KeyTable(Lexer::Singles));
+        stream->setExpList(Lexer::getAllRegex());
+        stream->setSingles(Lexer::getAllSingles());
         stream->setUnknownId(Lexer::T_CHAR);
         stream->setNewLineId(Lexer::T_NEWLINE);
         stream->setEOSId(Lexer::T_EOS);

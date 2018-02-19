@@ -3,12 +3,15 @@ extern zend_class_entry *toml_parser_ce;
 
 ZEPHIR_INIT_CLASS(Toml_Parser);
 
-PHP_METHOD(Toml_Parser, setExpMap);
-PHP_METHOD(Toml_Parser, popExpMap);
-PHP_METHOD(Toml_Parser, pushExpMap);
+PHP_METHOD(Toml_Parser, popExpSet);
+PHP_METHOD(Toml_Parser, pushExpSet);
+PHP_METHOD(Toml_Parser, getExpSet);
+PHP_METHOD(Toml_Parser, setExpSet);
 PHP_METHOD(Toml_Parser, __construct);
 PHP_METHOD(Toml_Parser, parseFile);
+PHP_METHOD(Toml_Parser, prepareInput);
 PHP_METHOD(Toml_Parser, parse);
+PHP_METHOD(Toml_Parser, getRoot);
 PHP_METHOD(Toml_Parser, implementation);
 PHP_METHOD(Toml_Parser, parseComment);
 PHP_METHOD(Toml_Parser, skipSpace);
@@ -37,18 +40,25 @@ PHP_METHOD(Toml_Parser, parseCommentsAndSpace);
 PHP_METHOD(Toml_Parser, errorUniqueKey);
 PHP_METHOD(Toml_Parser, unexpectedTokenError);
 PHP_METHOD(Toml_Parser, syntaxError);
-zend_object *zephir_init_properties_Toml_Parser(zend_class_entry *class_type TSRMLS_DC);
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_setexpmap, 0, 0, 1)
-	ZEND_ARG_INFO(0, xid)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_pushexpset, 0, 0, 1)
+	ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_pushexpmap, 0, 0, 1)
-	ZEND_ARG_INFO(0, xid)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_getexpset, 0, 0, 1)
+	ZEND_ARG_INFO(0, value)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_setexpset, 0, 0, 1)
+	ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_parsefile, 0, 0, 1)
 	ZEND_ARG_INFO(0, path)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_prepareinput, 0, 0, 1)
+	ZEND_ARG_INFO(0, input)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_parse, 0, 0, 1)
@@ -174,12 +184,15 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_syntaxerror, 0, 0, 1)
 ZEND_END_ARG_INFO()
 
 ZEPHIR_INIT_FUNCS(toml_parser_method_entry) {
-	PHP_ME(Toml_Parser, setExpMap, arginfo_toml_parser_setexpmap, ZEND_ACC_PRIVATE)
-	PHP_ME(Toml_Parser, popExpMap, NULL, ZEND_ACC_PROTECTED)
-	PHP_ME(Toml_Parser, pushExpMap, arginfo_toml_parser_pushexpmap, ZEND_ACC_PROTECTED)
+	PHP_ME(Toml_Parser, popExpSet, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Toml_Parser, pushExpSet, arginfo_toml_parser_pushexpset, ZEND_ACC_PUBLIC)
+	PHP_ME(Toml_Parser, getExpSet, arginfo_toml_parser_getexpset, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+	PHP_ME(Toml_Parser, setExpSet, arginfo_toml_parser_setexpset, ZEND_ACC_PRIVATE)
 	PHP_ME(Toml_Parser, __construct, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
 	PHP_ME(Toml_Parser, parseFile, arginfo_toml_parser_parsefile, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+	PHP_ME(Toml_Parser, prepareInput, arginfo_toml_parser_prepareinput, ZEND_ACC_PRIVATE)
 	PHP_ME(Toml_Parser, parse, arginfo_toml_parser_parse, ZEND_ACC_PUBLIC)
+	PHP_ME(Toml_Parser, getRoot, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Toml_Parser, implementation, arginfo_toml_parser_implementation, ZEND_ACC_PRIVATE)
 	PHP_ME(Toml_Parser, parseComment, arginfo_toml_parser_parsecomment, ZEND_ACC_PRIVATE)
 	PHP_ME(Toml_Parser, skipSpace, arginfo_toml_parser_skipspace, ZEND_ACC_PRIVATE)

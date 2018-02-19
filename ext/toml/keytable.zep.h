@@ -17,7 +17,7 @@ PHP_METHOD(Toml_KeyTable, merge);
 PHP_METHOD(Toml_KeyTable, _merge);
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_keytable___construct, 0, 0, 0)
-	ZEND_ARG_ARRAY_INFO(0, seed, 1)
+	ZEND_ARG_INFO(0, seed)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_keytable_settag, 0, 0, 1)

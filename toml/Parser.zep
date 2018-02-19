@@ -20,65 +20,50 @@ class Parser
     //private keys = []; //usage controlled by $useKeyStore
     //private currentKeyPrefix = ''; //usage controlled by $useKeyStore
 
-    const E_KEYS = 1;
-    const E_VALUES = 2;
-    const E_LITERAL = 3;
-    const E_BASIC = 4;
+    const E_KEY = 0;
+    const E_VALUE = 1;
+    const E_LSTRING = 2;
+    const E_BSTRING = 3;
+    const E_ALL = 4;
 
     private _root = null; // root Table object
     private _table = null; // dyanamic reference to current Table object
 // For regex table stack
     private _ts = null;
 
+ // Current regex table type
+    private _expSetId = -1;
     // Stack of regex types.
-    
-    private _xid; 
-    private _expStack = [];
-    // key value parse
-    public _briefExpressions;  
-    public _fullExpressions;
-    public _basicString;
-    public _literalString;
+    private _expStack;
+    private _stackTop;
 
+
+    // Regular expressions, as class constants
+    static private _keyRegex;  
+    static private _valRegex;
+    static private _regBasic;
+    static private _regLiteral;
    
-    
-    // Its safer to use Ids, than store an object references
-    // on a stack
-    private function setExpMap(int! xid) -> void 
-    {
-
-        switch (xid) {
-            case Parser::E_KEYS:
-                this->_ts->setExpMap(this->_briefExpressions);
-                break;
-
-            case Parser::E_VALUES:
-                this->_ts->setExpMap(this->_fullExpressions);
-                break;
-
-            case Parser::E_LITERAL:
-                
-                this->_ts->setExpMap(this->_literalString);
-                break;
-
-            case Parser::E_BASIC:
-                this->_ts->setExpMap(this->_basicString);
-                break;
-            default:
-                return;
-        }
-        let this->_xid = xid;
-    }
-
-    /**
+     /**
      * Set the expression set to the previous on the
      * expression set stack (a stack of integers) 
      */
-    protected function popExpMap() -> void
+    public function popExpSet() -> void
     {
-        var xid;
-        let xid = array_pop(this->_expStack);
-        this->setExpMap(xid);
+        int value;
+        int top;
+        var stack;
+        let stack = this->_expStack;
+        let top = (int) this->_stackTop;
+
+        if top > 0 {
+            let top = top - 1;
+            let value = (int) stack->offsetGet(top);
+            this->setExpSet(value);
+            let this->_stackTop = top;
+            return;
+        }
+        throw new XArrayable("popExpSet on empty stack"); 
     }
 
     /**
@@ -86,13 +71,83 @@ class Parser
      * constant
      * @param int $value
      */
-    protected function pushExpMap(int! xid) ->  void
+    public function pushExpSet(int! value) ->  void
     {
-    	// save current value
-        let this->_expStack[] = this->_xid;
-        this->setExpMap(xid);
+        // save current value
+        var stack;
+        int ct,top;
+        let stack = this->_expStack;
+        let top = (int) this->_stackTop; // top is insertion index
+        let ct = (int) stack->count();
+        if ct <= top { 
+            // expand
+            stack->setSize(top+16);
+        }
+        stack->offsetSet(top,this->_expSetId);
+        let this->_stackTop = top+1;
+        this->setExpSet(value);
     }
 
+    public static function getExpSet(int! value) -> <KeyTable>
+    {
+        var result;
+
+        switch (value) {
+            case Parser::E_KEY:
+                let result = self::_keyRegex;
+                if empty result {
+                    let result = Lexer::getExpSet(Lexer::BriefList);
+                    let self::_keyRegex = result;
+                }
+                break;
+            case Parser::E_BSTRING:
+                let result = self::_regBasic;
+                if empty result {
+                    let result = Lexer::getExpSet(Lexer::BasicStringList);
+                    let self::_regBasic = result;
+                }
+                break;
+            case Parser::E_LSTRING:
+                let result = self::_regLiteral;
+                if empty result {
+                    let result = Lexer::getExpSet(Lexer::LiteralStringList);
+                    let self::_regLiteral = result;
+                }
+                break;
+            case Parser::E_VALUE:
+                let result = self::_valRegex;
+                if empty result {
+                    let result = Lexer::getExpSet(Lexer::FullList);
+                    let self::_valRegex = result;
+                }
+                break;
+            case Parser::E_ALL:
+                let result = Lexer::getAllRegex();
+                break;
+            default:
+                throw new XArrayable("Not a defined table constant for getExpSet");
+        }    
+        return result;
+    }
+    private function setExpSet(int! value) -> void
+    {
+        let this->_expSetId = value;
+        switch (value) {
+            case Parser::E_KEY:
+                this->_ts->setExpList(Parser::_keyRegex);
+                break;
+            case Parser::E_BSTRING:
+                this->_ts->setExpList(Parser::_regBasic);
+                break;
+            case Parser::E_LSTRING:
+                this->_ts->setExpList(Parser::_regLiteral);
+                break;
+            case Parser::E_VALUE:
+            default:
+                this->_ts->setExpList(Parser::_valRegex);
+                break;
+        }
+    }
 
     /**
      * Everything that must be setup before calling setInput
@@ -103,20 +158,21 @@ class Parser
 
         let this->_root = new KeyTable();
         let this->_table = this->_root;
-
-        let this->_briefExpressions = new KeyTable(Lexer::getExpMap(Lexer::BriefList));
-        let this->_fullExpressions = new KeyTable(Lexer::getExpMap(Lexer::FullList));
-        let this->_basicString = new KeyTable(Lexer::getExpMap(Lexer::BasicStringList));
-        let this->_literalString = new KeyTable(Lexer::getExpMap(Lexer::LiteralStringList));
+        let this->_expStack = new \SplFixedArray();
+        let this->_stackTop = 0;
+        let Parser::_keyRegex = this->getExpSet(Parser::E_KEY);
+        let Parser::_valRegex = this->getExpSet(Parser::E_VALUE);
+        let Parser::_regBasic = this->getExpSet(Parser::E_BSTRING);
+        let Parser::_regLiteral = this->getExpSet(Parser::E_LSTRING);
 
         let ts = new TokenStream();
-        ts->setSingles(new KeyTable(Lexer::Singles));
-
+        ts->setSingles(Lexer::getAllSingles());
         ts->setUnknownId(Lexer::T_CHAR);
         ts->setNewLineId(Lexer::T_NEWLINE);
         ts->setEOSId(Lexer::T_EOS);
         let this->_ts = ts; // setExpSet requires this
-        this->setExpMap(Parser::E_KEYS);
+        // point to the base regexp array
+        this->setExpSet(Parser::E_KEY);
     }
 
     /**
@@ -142,27 +198,30 @@ class Parser
         let parser = new Parser();
         return parser->parse(toml);
     }
+    private function prepareInput(var input) -> void 
+    {
+        if (preg_match("//u", input) === false) {
+            throw new XArrayable("The TOML input does not appear to be valid UTF-8.");
+        }
+        var iclean;
+        let iclean = str_replace(["\r\n", "\r"], "\n", input);
+        let iclean = str_replace("\t", " ", iclean);
 
+        this->_ts->setInput(iclean);   
+    }
     /**
      * {@inheritdoc}
      */
     public function parse(string! input) -> array
     {
-        if (preg_match("//u", input) === false) {
-            throw new XArrayable("The TOML input does not appear to be valid UTF-8.");
-        }
-
-        let input = str_replace(["\r\n", "\r"], "\n", input);
-        let input = str_replace("\t", " ", input);
-
-        // this function does or dies
-
-        this->_ts->setInput(input);
+        this->prepareInput(input);
         this->implementation(this->_ts);
-
         return this->_root->toArray();
     }
-
+    public function getRoot() -> <KeyTable>
+    {
+        return this->_root;
+    }
     /**
      * Process all tokens until T_EOS
      * @param TokenStream $ts
@@ -214,14 +273,14 @@ class Parser
             this->throwTokenError(ts->getToken(), tokenId);
         }
         // parsing a comment so use basic string expression set
-        this->pushExpMap(Parser::E_KEYS);
+        this->pushExpSet(Parser::E_KEY);
         while (true) {
             let tokenId = (int) ts->moveNextId();
             if (tokenId == Lexer::T_NEWLINE) || (tokenId == Lexer::T_EOS) {
                 break;
             }
         }
-        this->popExpMap();
+        this->popExpSet();
         return tokenId;
     }
 
@@ -264,7 +323,7 @@ class Parser
         if tokenId != Lexer::T_EQUAL {
             this->throwTokenError(ts->getToken(), Lexer::T_EQUAL);
         }
-        this->pushExpMap(Parser::E_VALUES);
+        this->pushExpSet(Parser::E_VALUE);
 
         let tokenId = (int)  ts->moveNextId();//clear EQUAL
         if tokenId == Lexer::T_SPACE {
@@ -282,7 +341,7 @@ class Parser
             let value = this->parseSimpleValue(ts);
             this->_table->offsetSet(keyName, value);
         }
-        this->popExpMap();
+        this->popExpSet();
         let tokenId = (int)  ts->moveNextId(); // clear value parse ends
         if !isFromInlineTable {
             return this->finishLine(ts);
@@ -423,7 +482,7 @@ class Parser
      */
     private function parseBasicString(<TokenStream> ts) -> string
     {
-        this->pushExpMap(Parser::E_BASIC);
+        this->pushExpSet(Parser::E_BSTRING);
         
         int tokenId;
         string value;
@@ -449,7 +508,7 @@ class Parser
             let result = result . value;
             let tokenId = (int) ts->moveNextId();
         }
-        this->popExpMap();
+        this->popExpSet();
         return result;
     }
 
@@ -464,7 +523,7 @@ class Parser
         if tokenId != Lexer::T_3_QUOTATION_MARK {
             this->throwTokenError(ts->getToken(), Lexer::T_3_QUOTATION_MARK);
         }
-        this->pushExpMap(Parser::E_BASIC);
+        this->pushExpSet(Parser::E_BSTRING);
 
         
         let result = "";
@@ -476,7 +535,7 @@ class Parser
         while (doLoop) {
             switch (tokenId) {
                 case Lexer::T_3_QUOTATION_MARK :
-                    this->popExpMap();
+                    this->popExpSet();
                     let doLoop = false;
                     break;
                 case Lexer::T_EOS:
@@ -525,7 +584,7 @@ class Parser
             this->throwTokenError(ts->getToken(), Lexer::T_APOSTROPHE);
         }
 
-        this->pushExpMap(Parser::E_LITERAL);
+        this->pushExpSet(Parser::E_LSTRING);
 
         let tokenId = (int) ts->moveNextId();
 
@@ -537,7 +596,7 @@ class Parser
             let result = result . (string) ts->getValue();
             let tokenId =  (int) ts->moveNextId();
         }
-        this->popExpMap();
+        this->popExpSet();
         return result;
     }
 
@@ -550,7 +609,7 @@ class Parser
         if (tokenId != Lexer::T_3_APOSTROPHE) {
             this->throwTokenError(ts->getToken(), Lexer::T_3_APOSTROPHE);
         }
-        this->pushExpMap(Parser::E_LITERAL);
+        this->pushExpSet(Parser::E_LSTRING);
 
         let result = "";
 
@@ -570,7 +629,7 @@ class Parser
             let result = result . (string) ts->getValue();
             let tokenId = (int) ts->moveNextId();
         }
-        this->popExpMap();
+        this->popExpSet();
 
         if (tokenId != Lexer::T_3_APOSTROPHE) {
             this->throwTokenError(ts->getToken(), Lexer::T_3_APOSTROPHE);
@@ -734,7 +793,7 @@ class Parser
         if (tokenId != Lexer::T_LEFT_CURLY_BRACE) {
             this->throwTokenError(ts->getToken(), Lexer::T_LEFT_CURLY_BRACE);
         }
-        this->pushExpMap(Parser::E_KEYS); // looking for keys
+        this->pushExpSet(Parser::E_KEY); // looking for keys
 
         let priorTable = this->_table;
 
@@ -767,7 +826,7 @@ class Parser
                 let tokenId = (int) ts->moveNextId();
             }
         }
-        this->popExpMap();
+        this->popExpSet();
         if (tokenId != Lexer::T_RIGHT_CURLY_BRACE) {
             this->throwTokenError(ts->getToken(), Lexer::T_RIGHT_CURLY_BRACE);
         }

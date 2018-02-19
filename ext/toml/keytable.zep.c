@@ -12,9 +12,9 @@
 #include <Zend/zend_interfaces.h>
 
 #include "kernel/main.h"
-#include "kernel/operators.h"
-#include "kernel/memory.h"
 #include "kernel/object.h"
+#include "kernel/memory.h"
+#include "kernel/operators.h"
 #include "kernel/array.h"
 #include "kernel/fcall.h"
 
@@ -62,48 +62,74 @@ ZEPHIR_INIT_CLASS(Toml_KeyTable) {
 
 PHP_METHOD(Toml_KeyTable, __construct) {
 
-	zend_string *_2$$3;
-	zend_ulong _1$$3;
-	zval *seed_param = NULL, key$$3, value$$3, *_0$$3, init$$5;
-	zval seed;
+	zend_string *_5$$3, *_8$$5;
+	zend_ulong _4$$3, _7$$5;
+	zend_bool _0;
+	zval *seed = NULL, seed_sub, __$null, _1, key$$3, value$$3, _2$$3, *_3$$3, key$$5, value$$5, *_6$$5, init$$7;
 	zval *this_ptr = getThis();
 
-	ZVAL_UNDEF(&seed);
+	ZVAL_UNDEF(&seed_sub);
+	ZVAL_NULL(&__$null);
+	ZVAL_UNDEF(&_1);
 	ZVAL_UNDEF(&key$$3);
 	ZVAL_UNDEF(&value$$3);
-	ZVAL_UNDEF(&init$$5);
+	ZVAL_UNDEF(&_2$$3);
+	ZVAL_UNDEF(&key$$5);
+	ZVAL_UNDEF(&value$$5);
+	ZVAL_UNDEF(&init$$7);
 
 	ZEPHIR_MM_GROW();
-	zephir_fetch_params(1, 0, 1, &seed_param);
+	zephir_fetch_params(1, 0, 1, &seed);
 
-	if (!seed_param) {
-		ZEPHIR_INIT_VAR(&seed);
-		array_init(&seed);
-	} else {
-		zephir_get_arrval(&seed, seed_param);
+	if (!seed) {
+		seed = &seed_sub;
+		seed = &__$null;
 	}
 
 
-	if (!(ZEPHIR_IS_EMPTY(&seed))) {
-		zephir_is_iterable(&seed, 0, "toml/KeyTable.zep", 46);
-		ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(&seed), _1$$3, _2$$3, _0$$3)
+	_0 = Z_TYPE_P(seed) == IS_OBJECT;
+	if (_0) {
+		_0 = (zephir_instance_of_ev(seed, toml_keytable_ce TSRMLS_CC));
+	}
+	ZEPHIR_INIT_VAR(&_1);
+	zephir_gettype(&_1, seed TSRMLS_CC);
+	if (_0) {
+		zephir_read_property(&_2$$3, seed, SL("_store"), PH_NOISY_CC | PH_READONLY);
+		zephir_is_iterable(&_2$$3, 0, "toml/KeyTable.zep", 45);
+		ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(&_2$$3), _4$$3, _5$$3, _3$$3)
 		{
 			ZEPHIR_INIT_NVAR(&key$$3);
-			if (_2$$3 != NULL) { 
-				ZVAL_STR_COPY(&key$$3, _2$$3);
+			if (_5$$3 != NULL) { 
+				ZVAL_STR_COPY(&key$$3, _5$$3);
 			} else {
-				ZVAL_LONG(&key$$3, _1$$3);
+				ZVAL_LONG(&key$$3, _4$$3);
 			}
 			ZEPHIR_INIT_NVAR(&value$$3);
-			ZVAL_COPY(&value$$3, _0$$3);
+			ZVAL_COPY(&value$$3, _3$$3);
 			zephir_update_property_array(this_ptr, SL("_store"), &key$$3, &value$$3 TSRMLS_CC);
 		} ZEND_HASH_FOREACH_END();
 		ZEPHIR_INIT_NVAR(&value$$3);
 		ZEPHIR_INIT_NVAR(&key$$3);
+	} else if (ZEPHIR_IS_STRING_IDENTICAL(&_1, "array")) {
+		zephir_is_iterable(seed, 0, "toml/KeyTable.zep", 51);
+		ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(seed), _7$$5, _8$$5, _6$$5)
+		{
+			ZEPHIR_INIT_NVAR(&key$$5);
+			if (_8$$5 != NULL) { 
+				ZVAL_STR_COPY(&key$$5, _8$$5);
+			} else {
+				ZVAL_LONG(&key$$5, _7$$5);
+			}
+			ZEPHIR_INIT_NVAR(&value$$5);
+			ZVAL_COPY(&value$$5, _6$$5);
+			zephir_update_property_array(this_ptr, SL("_store"), &key$$5, &value$$5 TSRMLS_CC);
+		} ZEND_HASH_FOREACH_END();
+		ZEPHIR_INIT_NVAR(&value$$5);
+		ZEPHIR_INIT_NVAR(&key$$5);
 	} else {
-		ZEPHIR_INIT_VAR(&init$$5);
-		array_init(&init$$5);
-		zephir_update_property_zval(this_ptr, SL("_store"), &init$$5);
+		ZEPHIR_INIT_VAR(&init$$7);
+		array_init(&init$$7);
+		zephir_update_property_zval(this_ptr, SL("_store"), &init$$7);
 	}
 	ZEPHIR_MM_RESTORE();
 
@@ -183,7 +209,7 @@ PHP_METHOD(Toml_KeyTable, offsetGet) {
 
 
 	zephir_read_property(&_0, this_ptr, SL("_store"), PH_NOISY_CC | PH_READONLY);
-	zephir_array_fetch(&_1, &_0, index, PH_NOISY | PH_READONLY, "toml/KeyTable.zep", 75 TSRMLS_CC);
+	zephir_array_fetch(&_1, &_0, index, PH_NOISY | PH_READONLY, "toml/KeyTable.zep", 80 TSRMLS_CC);
 	RETURN_CTORW(&_1);
 
 }
@@ -243,7 +269,7 @@ PHP_METHOD(Toml_KeyTable, get) {
 	zephir_read_property(&_1, this_ptr, SL("_store"), PH_NOISY_CC | PH_READONLY);
 	if (zephir_array_isset(&_1, index)) {
 		zephir_read_property(&_2, this_ptr, SL("_store"), PH_NOISY_CC | PH_READONLY);
-		zephir_array_fetch(&_0, &_2, index, PH_NOISY, "toml/KeyTable.zep", 90 TSRMLS_CC);
+		zephir_array_fetch(&_0, &_2, index, PH_NOISY, "toml/KeyTable.zep", 95 TSRMLS_CC);
 	} else {
 		ZEPHIR_CPY_WRT(&_0, defaultValue);
 	}
@@ -290,7 +316,7 @@ PHP_METHOD(Toml_KeyTable, toArray) {
 	zephir_read_property(&_0, this_ptr, SL("_store"), PH_NOISY_CC | PH_READONLY);
 	if (!(ZEPHIR_IS_EMPTY(&_0))) {
 		zephir_read_property(&_1$$3, this_ptr, SL("_store"), PH_NOISY_CC | PH_READONLY);
-		zephir_is_iterable(&_1$$3, 0, "toml/KeyTable.zep", 113);
+		zephir_is_iterable(&_1$$3, 0, "toml/KeyTable.zep", 118);
 		ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(&_1$$3), _3$$3, _4$$3, _2$$3)
 		{
 			ZEPHIR_INIT_NVAR(&key);
@@ -388,7 +414,7 @@ PHP_METHOD(Toml_KeyTable, _merge) {
 		ZEPHIR_CPY_WRT(target, this_ptr);
 	}
 	zephir_read_property(&_0, kt, SL("_store"), PH_NOISY_CC | PH_READONLY);
-	zephir_is_iterable(&_0, 0, "toml/KeyTable.zep", 155);
+	zephir_is_iterable(&_0, 0, "toml/KeyTable.zep", 160);
 	ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(&_0), _2, _3, _1)
 	{
 		ZEPHIR_INIT_NVAR(&key);
