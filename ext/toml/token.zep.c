@@ -25,7 +25,7 @@
  */
 ZEPHIR_INIT_CLASS(Toml_Token) {
 
-	ZEPHIR_REGISTER_CLASS(Toml, Token, toml, token, toml_token_method_entry, ZEND_ACC_FINAL_CLASS);
+	ZEPHIR_REGISTER_CLASS(Toml, Token, toml, token, toml_token_method_entry, 0);
 
 	zend_declare_property_null(toml_token_ce, SL("value"), ZEND_ACC_PUBLIC TSRMLS_CC);
 
@@ -41,32 +41,9 @@ ZEPHIR_INIT_CLASS(Toml_Token) {
 
 PHP_METHOD(Toml_Token, __construct) {
 
-	zval __$true, __$false, _0, _1;
 	zval *this_ptr = getThis();
 
-	ZVAL_BOOL(&__$true, 1);
-	ZVAL_BOOL(&__$false, 0);
-	ZVAL_UNDEF(&_0);
-	ZVAL_UNDEF(&_1);
 
-	ZEPHIR_MM_GROW();
-
-	ZEPHIR_INIT_VAR(&_0);
-	ZEPHIR_INIT_NVAR(&_0);
-	ZVAL_STRING(&_0, "");
-	zephir_update_property_zval(this_ptr, SL("value"), &_0);
-	ZEPHIR_INIT_ZVAL_NREF(_1);
-	ZVAL_LONG(&_1, 0);
-	zephir_update_property_zval(this_ptr, SL("id"), &_1);
-	ZEPHIR_INIT_ZVAL_NREF(_1);
-	ZVAL_LONG(&_1, -1);
-	zephir_update_property_zval(this_ptr, SL("line"), &_1);
-	if (0) {
-		zephir_update_property_zval(this_ptr, SL("isSingle"), &__$true);
-	} else {
-		zephir_update_property_zval(this_ptr, SL("isSingle"), &__$false);
-	}
-	ZEPHIR_MM_RESTORE();
 
 }
 

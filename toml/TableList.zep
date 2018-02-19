@@ -18,7 +18,7 @@ final class TableList implements Arrayable {
 
     public final function __construct(array list = null) {
        if empty list {
-            //let this->_list =  [];
+            let this->_list = [];
             let this->_list[0] = new KeyTable();
         }
         else {

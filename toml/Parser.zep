@@ -15,10 +15,11 @@ namespace Toml;
 class Parser
 {
 	    // consts for parser expression tables
-    const E_BRIEF = 0;
-    const E_FULL = 1;
+    const E_KEY = 0;
+    const E_VALUE = 1;
     const E_LSTRING = 2;
     const E_BSTRING = 3;
+    const E_ALL = 4;
 
     // Waiting for a test case that shows $useKeyStore is needed
     //private useKeyStore = false;
@@ -32,17 +33,15 @@ class Parser
      // Current regex table type
     private _expSetId = -1;
     // Stack of regex types.
-    private _expStack = [];
-    // key value parse
-    public _briefExpressions = [];  
-    public _fullExpressions = [];
-    public _basicString = [];
-    public _literalString = [];
-
+    private _expStack;
+    private _stackTop;
 
     
-
-   
+    // Regular expressions, as class constants
+    static private _keyRegex;  
+    static private _valRegex;
+    static private _regBasic;
+    static private _regLiteral;
 
     /**
      * Set the expression set to the previous on the
@@ -50,9 +49,20 @@ class Parser
      */
     public function popExpSet() -> void
     {
-        var value;
-        let value = array_pop(this->_expStack);
-        this->setExpSet(value);
+        int value;
+        int top;
+        var stack;
+        let stack = this->_expStack;
+        let top = (int) this->_stackTop;
+
+        if top > 0 {
+            let top = top - 1;
+            let value = (int) stack->offsetGet(top);
+            this->setExpSet(value);
+            let this->_stackTop = top;
+            return;
+        }
+        throw new XArrayable("popExpSet on empty stack"); 
     }
 
     /**
@@ -63,26 +73,77 @@ class Parser
     public function pushExpSet(int! value) ->  void
     {
     	// save current value
-        let this->_expStack[] = this->_expSetId;
+        var stack;
+        int ct,top;
+        let stack = this->_expStack;
+        let top = (int) this->_stackTop; // top is insertion index
+        let ct = (int) stack->count();
+        if ct <= top { 
+            // expand
+            stack->setSize(top+16);
+        }
+        stack->offsetSet(top,this->_expSetId);
+        let this->_stackTop = top+1;
         this->setExpSet(value);
     }
 
+    public static function getExpSet(int! value) -> <KeyTable>
+    {
+        var result;
+
+        switch (value) {
+            case Parser::E_KEY:
+                let result = self::_keyRegex;
+                if empty result {
+                    let result = Lexer::getExpSet(Lexer::BriefList);
+                    let self::_keyRegex = result;
+                }
+                break;
+            case Parser::E_BSTRING:
+                let result = self::_regBasic;
+                if empty result {
+                    let result = Lexer::getExpSet(Lexer::BasicStringList);
+                    let self::_regBasic = result;
+                }
+                break;
+            case Parser::E_LSTRING:
+                let result = self::_regLiteral;
+                if empty result {
+                    let result = Lexer::getExpSet(Lexer::LiteralStringList);
+                    let self::_regLiteral = result;
+                }
+                break;
+            case Parser::E_VALUE:
+                let result = self::_valRegex;
+                if empty result {
+                    let result = Lexer::getExpSet(Lexer::FullList);
+                    let self::_valRegex = result;
+                }
+                break;
+            case Parser::E_ALL:
+                let result = Lexer::getAllRegex();
+                break;
+            default:
+                throw new XArrayable("Not a defined table constant for getExpSet");
+        }    
+        return result;
+    }
     private function setExpSet(int! value) -> void
     {
         let this->_expSetId = value;
         switch (value) {
-            case Parser::E_BRIEF:
-                this->_ts->setExpList(this->_briefExpressions);
+            case Parser::E_KEY:
+                this->_ts->setExpList(Parser::_keyRegex);
                 break;
             case Parser::E_BSTRING:
-                this->_ts->setExpList(this->_basicString);
+                this->_ts->setExpList(Parser::_regBasic);
                 break;
             case Parser::E_LSTRING:
-                this->_ts->setExpList(this->_literalString);
+                this->_ts->setExpList(Parser::_regLiteral);
                 break;
-            case Parser::E_FULL:
+            case Parser::E_VALUE:
             default:
-                this->_ts->setExpList(this->_fullExpressions);
+                this->_ts->setExpList(Parser::_valRegex);
                 break;
         }
     }
@@ -104,21 +165,21 @@ class Parser
 
         let this->_root = new KeyTable();
         let this->_table = this->_root;
-
-        let this->_briefExpressions = new KeyTable(Lexer::getExpSet(Lexer::BriefList));
-        let this->_fullExpressions = new KeyTable(Lexer::getExpSet(Lexer::FullList));
-        let this->_basicString = new KeyTable(Lexer::getExpSet(Lexer::BasicStringList));
-        let this->_literalString = new KeyTable(Lexer::getExpSet(Lexer::LiteralStringList));
+        let this->_expStack = new \SplFixedArray();
+        let this->_stackTop = 0;
+        let Parser::_keyRegex = this->getExpSet(Parser::E_KEY);
+        let Parser::_valRegex = this->getExpSet(Parser::E_VALUE);
+        let Parser::_regBasic = this->getExpSet(Parser::E_BSTRING);
+        let Parser::_regLiteral = this->getExpSet(Parser::E_LSTRING);
 
         let ts = new TokenStream();
-        ts->setSingles(new KeyTable(Lexer::Singles));
-
+        ts->setSingles(Lexer::getAllSingles());
         ts->setUnknownId(Lexer::T_CHAR);
         ts->setNewLineId(Lexer::T_NEWLINE);
         ts->setEOSId(Lexer::T_EOS);
         let this->_ts = ts; // setExpSet requires this
         // point to the base regexp array
-        this->setExpSet(Parser::E_BRIEF);
+        this->setExpSet(Parser::E_KEY);
     }
 
     /**
@@ -129,12 +190,12 @@ class Parser
      * @return (array) Toml::parse() result
      */
     public static function parseFile(string! path) -> array
-    {
+    {   
         if (!is_file(path)) {
             throw new XArrayable("File path not a file " . path);
         }
 
-        var toml, parser;
+        var toml, parser, result;
 
         let toml = file_get_contents(path);
 
@@ -142,49 +203,50 @@ class Parser
         let toml = preg_replace("/^" . pack("H*", "EFBBBF") . "/", "", toml);
 
         let parser = new Parser();
-        return parser->parse(toml);
+        let result = parser->parse(toml);
+        return result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function parse(string! input) -> array
+
+    private function prepareInput(var input) -> void 
     {
         if (preg_match("//u", input) === false) {
             throw new XArrayable("The TOML input does not appear to be valid UTF-8.");
         }
+        var iclean;
+        let iclean = str_replace(["\r\n", "\r"], "\n", input);
+        let iclean = str_replace("\t", " ", iclean);
 
-        let input = str_replace(["\r\n", "\r"], "\n", input);
-        let input = str_replace("\t", " ", input);
+        this->_ts->setInput(iclean);   
+    }
+    /**
+    */
 
-        // this function does or dies
-
-        this->_ts->setInput(input);
+    public function parse(var input) -> array
+    {
+        this->prepareInput(input);
         this->implementation(this->_ts);
-
         return this->_root->toArray();
     }
 
+    public function getRoot() -> <KeyTable>
+    {
+        return this->_root;
+    }
     /**
      * Process all tokens until T_EOS
      * @param TokenStream $ts
      */
     private function implementation(<TokenStream> ts) -> void
     {
-        //if (this->useKeyStore) {
-        //    this->currentKeyPrefix = '';
-        //}
-
         int tokenId;
         let this->_table = this->_root;
-        //echo "Start " . print_r(this,true) . PHP_EOL;
+        
         let tokenId = (int) ts->moveNextId();
 
         while (tokenId != Lexer::T_EOS) {
-            //$tokenName = Lexer::tokenName($tokenId);
-            
+            //$tokenName = Lexer::tokenName($tokenId)
             switch (tokenId) {
-
                 case Lexer::T_HASH :
                     let tokenId = (int) this->parseComment(ts);
                     break;
@@ -209,6 +271,10 @@ class Parser
         }
     }
 
+    public function hitGetTokenId() -> var 
+    {
+        return this->_ts->getTokenId();
+    }
 
     /** 
      * Skip comment, and return next none-comment token or NEWLINE or EOS
@@ -272,8 +338,8 @@ class Parser
         if tokenId != Lexer::T_EQUAL {
             this->throwTokenError(ts->getToken(), Lexer::T_EQUAL);
         }
-        this->pushExpSet(Parser::E_FULL);
-
+        this->pushExpSet(Parser::E_VALUE);
+        
         let tokenId = (int)  ts->moveNextId();//clear EQUAL
         if tokenId == Lexer::T_SPACE {
             let tokenId = (int)  ts->moveNextId();
@@ -742,7 +808,7 @@ class Parser
         if (tokenId != Lexer::T_LEFT_CURLY_BRACE) {
             this->throwTokenError(ts->getToken(), Lexer::T_LEFT_CURLY_BRACE);
         }
-        this->pushExpSet(Parser::E_BRIEF); // looking for keys
+        this->pushExpSet(Parser::E_KEY); // looking for keys
 
         let priorTable = this->_table;
 

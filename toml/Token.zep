@@ -12,20 +12,21 @@ namespace Toml;
  * Token used to communicate parse results
  *  
  */
-final class  Token {
+class  Token {
     public value;
     public id;// integer identity!
     public line;
     public isSingle;
 
 
-    final public function __construct() {
-        let this->value = "";
+    public function __construct() {
+        /*let this->value = "";
         let this->id = 0;
         let this->line = -1;
         let this->isSingle = false;
+        */
     }
-    final public function set(string! value, int id, int line, bool isSingle=false) -> void
+    public function set(string! value, int id, int line, bool isSingle=false) -> void
     {
         let this->value = value;
         let this->id = id;

@@ -18,14 +18,14 @@ class TokenStream
     protected _unknownId; // int value to represent single character not in singles.
     protected _newLineId; //
     protected _eosId;
-    protected _matches;
+    //protected _matches;
     protected _token;  // The one and only token instance
     // topLevel parse
-    
-    
+
     public function __construct() {
         let this->_token = new Token();
     }
+
     public function setEOSId(int! id) {
         let this->_eosId = id;
     }    
@@ -36,6 +36,7 @@ class TokenStream
     {
         let this->_unknownId = $id;
     }
+
     /**
      * Argument is reference to associative array[int] of string regular expressions
      * @param array $ref
@@ -136,9 +137,11 @@ class TokenStream
     
     private function parseNextId(var patterns) -> int {
     	var id, pattern, takeoff;
-        var matches;
-        var nextLine;
+        
+        int nextLine;
         var tid, uni;
+        var test;
+
         if (empty(this->_curLine)) {
             let nextLine = this->_lineNo + 1;
             if (nextLine < this->_lineCount) {
@@ -159,37 +162,45 @@ class TokenStream
             let this->_tokenLine = this->_lineNo + 1;
         }
 
+        let test = this->_curLine;
+        let this->_curLine = null;
+        
         for id, pattern in this->_regex->_store {
-            if (preg_match(pattern, this->_curLine, matches)) {
+            var matches = null; // !! Here stops memory leak !!
+            if (preg_match(pattern, test, matches)) {
                 let this->_value = matches[1];
 		        let this->_id = id;
 		        let this->_isSingle = false;
 		        let this->_line = this->_tokenLine;
 		        
-		        let takeoff = strlen(matches[1]);
+		        let takeoff = strlen(matches[0]);
 		        let this->_offset += takeoff;
-		        let this->_curLine = substr(this->_curLine, takeoff);
+
+		        let this->_curLine = substr(test, takeoff);
+                //let matches = null;
 		        return this->_id;
     		}
         }
+        
         // no expressions matched, as a default, classify unicode character
         // get next unicode character using mb_substr,
         // then chop this using substr
-        let uni = mb_substr(this->_curLine,0,1);
+        let uni = mb_substr(test,0,1);
         let takeoff = strlen(uni);
         let this->_offset += takeoff; 
-        let this->_curLine = substr(this->_curLine, takeoff);
+        let this->_curLine = substr(test, takeoff);
         let this->_value = uni;
         
         // There are a lot of single character lexer Ids, so just look
         // them up in a table. If its not there, it is the all purpose 'T_CHAR'
         
 
-        if !fetch tid, this->_singles->_store[uni]  {
+        if !this->_singles->offsetExists(uni) {
         	let tid = this->_unknownId;
         	let this->_isSingle = false;
         }
         else {
+            let tid = this->_singles->offsetGet(uni);
         	let this->_isSingle = true;
         }
         let this->_id = tid;

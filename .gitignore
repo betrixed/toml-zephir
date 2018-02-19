@@ -2,6 +2,7 @@
 **.lo
 **.gch
 **.la
+**.so
 compile-errors.log
 compile.log
 /.temp/
