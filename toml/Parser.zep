@@ -15,11 +15,13 @@ namespace Toml;
 class Parser
 {
     const E_KEY = 0;
-    const E_VALUE = 1;
+    const E_SCALER = 1;
     const E_LSTRING = 2;
-    const E_BSTRING = 3;
-    const E_ALL = 4;
+    const E_MLSTRING = 3;
+    const E_BSTRING = 4;
+    const E_ALL = 5;
 
+    const IM_SPACE = "/(\\s+)/"; //immediate white space
     private _root = null; // root Table object
     private _table = null; // dyanamic reference to current Table object
 // Token stream
@@ -35,8 +37,9 @@ class Parser
     // Regular expressions, as class constants
     static private _keyRegex;  
     static private _valRegex;
-    static private _regBasic;
-    static private _regLiteral;
+    static private _regEString;
+    static private _regLString;
+    static private _regMLString;
    
      /**
      * Set the expression set to the previous on the
@@ -90,31 +93,38 @@ class Parser
             case Parser::E_KEY:
                 let result = self::_keyRegex;
                 if empty result {
-                    let result = Lexer::getExpSet(Lexer::BriefList);
+                    let result = Lexer::getExpSet(Lexer::KeyList);
                     let self::_keyRegex = result;
                 }
                 break;
             case Parser::E_BSTRING:
-                let result = self::_regBasic;
+                let result = self::_regEString;
                 if empty result {
-                    let result = Lexer::getExpSet(Lexer::BasicStringList);
-                    let self::_regBasic = result;
+                    let result = Lexer::getExpSet(Lexer::BasicString);
+                    let self::_regEString = result;
                 }
                 break;
             case Parser::E_LSTRING:
-                let result = self::_regLiteral;
+                let result = self::_regLString;
                 if empty result {
-                    let result = Lexer::getExpSet(Lexer::LiteralStringList);
-                    let self::_regLiteral = result;
+                    let result = Lexer::getExpSet(Lexer::LiteralString);
+                    let self::_regLString = result;
                 }
                 break;
-            case Parser::E_VALUE:
+            case Parser::E_SCALER:
                 let result = self::_valRegex;
                 if empty result {
-                    let result = Lexer::getExpSet(Lexer::FullList);
+                    let result = Lexer::getExpSet(Lexer::ScalerList);
                     let self::_valRegex = result;
                 }
                 break;
+            case Parser::E_MLSTRING:
+                let result = self::_regMLString;
+                if empty result {
+                    let result = Lexer::getExpSet(Lexer::LiteralMLString);
+                    let self::_regMLString = result;
+                }
+                break;   
             case Parser::E_ALL:
                 let result = Lexer::getAllRegex();
                 break;
@@ -125,26 +135,32 @@ class Parser
     }
     private function setExpSet(int! value) -> void
     {
-        let this->_expSetId = value;
+        var obj;     
         switch (value) {
             case Parser::E_KEY:
-                this->_ts->setExpList(Parser::_keyRegex);
+                let obj = Parser::_keyRegex;
                 break;
-            case Parser::E_BSTRING:
-                this->_ts->setExpList(Parser::_regBasic);
+            case Parser::E_SCALER:
+                let obj = Parser::_valRegex;
                 break;
             case Parser::E_LSTRING:
-                this->_ts->setExpList(Parser::_regLiteral);
+                let obj = Parser::_regLString;
                 break;
-            case Parser::E_VALUE:
+            case Parser::E_BSTRING:
+                let obj = Parser::_regEString;
+                break;
+            case Parser::E_MLSTRING:
+                let obj = Parser::_regMLString;
+                break;
             default:
-                this->_ts->setExpList(Parser::_valRegex);
-                break;
+                throw new XArrayable("Invalid expression set constant " . value);
         }
+        let this->_expSetId = value;
+        this->_ts->setExpSet(obj);
     }
 
     /**
-     * Everything that must be setup before calling setInput
+     * Setup class constants
      */
     public function __construct()
     {
@@ -155,9 +171,10 @@ class Parser
         let this->_expStack = new \SplFixedArray();
         let this->_stackTop = 0;
         let Parser::_keyRegex = this->getExpSet(Parser::E_KEY);
-        let Parser::_valRegex = this->getExpSet(Parser::E_VALUE);
-        let Parser::_regBasic = this->getExpSet(Parser::E_BSTRING);
-        let Parser::_regLiteral = this->getExpSet(Parser::E_LSTRING);
+        let Parser::_valRegex = this->getExpSet(Parser::E_SCALER);
+        let Parser::_regEString = this->getExpSet(Parser::E_BSTRING);
+        let Parser::_regLString = this->getExpSet(Parser::E_LSTRING);
+        let Parser::_regMLString = this->getExpSet(Parser::E_MLSTRING);
 
         let ts = new TokenStream();
         ts->setSingles(Lexer::getAllSingles());
@@ -248,7 +265,7 @@ class Parser
                     let tokenId = (int) ts->moveNextId();
                     break;
                 default:
-                    this->unexpectedTokenError(ts->getToken(), "Expect Key = , [Path] or # Comment" );
+                    this->syntaxError("Expect Key = , [Path] or # Comment", ts->getToken());
                     break;
             }
         }
@@ -262,86 +279,148 @@ class Parser
     private function parseComment(<TokenStream> ts) -> int
     {
         int tokenId;
-        let tokenId = (int) ts->getTokenId();
-        if tokenId != Lexer::T_HASH {
-            this->throwTokenError(ts->getToken(), tokenId);
-        }
-        // parsing a comment so use basic string expression set
-        this->pushExpSet(Parser::E_BSTRING);
-        while (true) {
-            let tokenId = (int) ts->moveNextId();
-            if (tokenId == Lexer::T_NEWLINE) || (tokenId == Lexer::T_EOS) {
-                break;
+        // Assert : Presume called because parser found a '#'
+        // Go to next vertical whitespace.
+        ts->moveRegex("/^(\\V*)/");
+        let tokenId = (int) ts->moveNextId();
+        return tokenId;
+    }
+    /**
+     *  Get a value that is not a table or array.
+     *  Predict and setup parse for simple value, using peek $tokenId
+     */
+    private function getSimpleValue(int! tokenId) -> var {  
+        var ts;
+        var value;
+
+        let ts = this->_ts;
+        if tokenId == Lexer::T_APOSTROPHE {
+            // 3 or 1 quote? [\\x{27}]{3,3}
+            if ts->moveRegex("/^(\\'\\'\\')/") {
+                let value = this->parseMLString(ts);
             }
+            else {
+                ts->acceptToken();
+                let value = this->parseLiteralString(ts);
+            }
+            //echo "Value (') = " . value . PHP_EOL;
+            return value;
+        } 
+        elseif tokenId == Lexer::T_QUOTATION_MARK {
+            // 3 or 1 quote? [\\x{22}]{3,3}
+            if ts->moveRegex("/^(\\\"\\\"\\\")/") {
+                let value = this->parseMLEscapeString(ts);
+            }
+            else {
+                ts->acceptToken();
+                let value = this->parseEscapeString(ts);
+            }
+            //echo "Value (\") = " . value . PHP_EOL;
+            //echo print_r(this) . PHP_EOL;
+            return value;
+        }
+        this->pushExpSet(Parser::E_SCALER);
+        // reject token Id and process regular expressions
+        
+        let tokenId =  (int) ts->moveNextId();
+        switch (tokenId) {
+            case Lexer::T_INTEGER:
+                let value = this->parseInteger(ts);
+                break;
+            case Lexer::T_BOOLEAN:
+                let value = (ts->getValue() == "true") ? true : false;
+                break;
+            case Lexer::T_FLOAT:
+                let value = this->parseFloat(ts);
+                break;       
+            case Lexer::T_DATE_TIME:
+                let value = this->parseDatetime(ts);
+                break;
+            default:
+                this->syntaxError("Value type expected",ts->getToken());
+                break;
         }
         this->popExpSet();
-        return tokenId;
+        //echo "Value (" . tokenId . ") = " . value . PHP_EOL;
+        return value;
+        
+    }
+
+    static private function valueWrap(string! s) ->string {
+        return ". Value { " . s . " }.";
     }
 
     /**
-     * Move off T_SPACE token to next
-     * @param TokenStream $ts
-     * @return int
+     * A call to expected regular expression failed,
+     * so find out what was there by using a more general 
+     * expression of space / something on rest of line
+     * @param string $msg
      */
-    private function skipSpace(<TokenStream> ts) -> int
-    {
-    	int tokenId;
-        let tokenId = (int) ts->getTokenId();
-        if (tokenId == Lexer::T_SPACE) {
-            let tokenId = (int) ts->moveNextId();
+    private function regexError(string! msg) ->void {
+        var ts, value;
+        let ts = this->_ts;
+        
+        let msg = msg . " on line " . ts->getLine();
+        if ts->moveRegex("/^(\\s*\\V*)/") {
+            let value = ts->getValue();
+            throw new XArrayable(msg  . self::valueWrap(value));
         }
-        return tokenId;
+        else {
+            int tokenId;
+            string name;
+
+            let tokenId = (int) ts->moveNextId();
+            let value = ts->getValue();
+            let name = (string) Lexer::tokenName(tokenId);
+            throw new XArrayable(msg . ". Got " . name . self::valueWrap(value));
+        }
     }
 
     private function parseKeyValue(<TokenStream> ts, bool! isFromInlineTable = false) -> int
     {
-    	var keyName, value;
+    	var keyName, value, token;
     	int tokenId;
 
         let keyName = this->parseKeyName(ts);
-        //echo "KeyName = " . keyName . PHP_EOL;
+        //echo "parseKeyName " . keyName . PHP_EOL;
         
         //if (this->useKeyStore) {
         //    this->mustBeUnique(this->currentKeyPrefix . $keyName);
         //} else {
         if (this->_table->offsetExists(keyName)) {
-            this->errorUniqueKey(keyName);
+            this->syntaxError("Duplicate key", ts->getToken());
         }
         //}
 
-        // get next none-space token
-        let tokenId = (int) ts->moveNextId();
-        if tokenId == Lexer::T_SPACE {
-            let tokenId = (int) ts->moveNextId();
+        if ts->moveRegex("/^(\\s*=\\s*)/") === false {
+            // nothing moved what is actually there?
+            this->regexError("Expected T_EQUAL (=)");
         }
-        if tokenId != Lexer::T_EQUAL {
-            this->throwTokenError(ts->getToken(), Lexer::T_EQUAL);
-        }
-        this->pushExpSet(Parser::E_VALUE);
-
-        let tokenId = (int)  ts->moveNextId();//clear EQUAL
-        if tokenId == Lexer::T_SPACE {
-            let tokenId = (int)  ts->moveNextId();
-        }
-
+        // E_SCALER has a lot of regular expressions in fixed order.
+        // Predict a smaller set to use, in micro - management style.
+        let token = ts->peekToken();
+        let tokenId = (int) token->id;
         if tokenId == Lexer::T_LEFT_SQUARE_BRACE {
+            ts->acceptToken();
         	let value = this->parseArray(ts);
             this->_table->offsetSet(keyName, value);
         } 
         elseif tokenId == Lexer::T_LEFT_CURLY_BRACE {
+            ts->acceptToken();
             this->parseInlineTable(ts, keyName);
         } 
         else {
-            let value = this->parseSimpleValue(ts);
+            let value = this->getSimpleValue(tokenId);
             this->_table->offsetSet(keyName, value);
         }
-        this->popExpSet();
-        let tokenId = (int)  ts->moveNextId(); // clear value parse ends
+        
         if !isFromInlineTable {
-            return this->finishLine(ts);
+            let tokenId = (int) this->finishLine(ts);
         } else {
-            return tokenId;
+            let tokenId = (int)  ts->moveNextId(); // clear value parse ends
+           
         }
+         return tokenId;
     }
 
     /**
@@ -358,7 +437,7 @@ class Parser
                 let value = ts->getValue();
                 break;
             case Lexer::T_QUOTATION_MARK:
-                let value = this->parseBasicString(ts);
+                let value = this->parseEscapeString(ts);
                 break;
             case Lexer::T_APOSTROPHE:
                 let value = this->parseLiteralString(ts);
@@ -367,61 +446,10 @@ class Parser
                 let value = this->parseInteger(ts);
                 break;
             default:
-                this->unexpectedTokenError(ts->getToken(), "Improper key");
+                this->syntaxError("Improper key", ts->getToken());
                 break;
         }
         return value;
-    }
-
-    /**
-     * @return object An object with two public properties: value and type.
-     * Returned object must be cloned to keep values of returned instance.
-     */
-    private function parseSimpleValue(<TokenStream> ts) -> var
-    {
-        // reuse same instance
-        int tokenId;
-        var value;
-
-        let tokenId = (int) ts->getTokenId();
-        
-        switch (tokenId) {
-            case Lexer::T_BOOLEAN:
-                let value = this->parseBoolean(ts);
-                break;
-            case Lexer::T_INTEGER:
-                let value = this->parseInteger(ts);
-                 break;
-            case Lexer::T_FLOAT:
-                let value = this->parseFloat(ts);
-                 break;
-            case Lexer::T_QUOTATION_MARK:
-                let value = this->parseBasicString(ts);
-                 break;
-            case Lexer::T_3_QUOTATION_MARK:
-                let value = this->parseMultilineBasicString(ts);
-                 break;
-            case Lexer::T_APOSTROPHE:
-                let value = this->parseLiteralString(ts);
-                 break;
-            case Lexer::T_3_APOSTROPHE:
-                let value = this->parseMultilineLiteralString(ts);
-                 break;
-            case Lexer::T_DATE_TIME:
-                let value = this->parseDatetime(ts);
-                 break;
-            default:
-                this->unexpectedTokenError(ts->getToken(), "Value expected: boolean, integer, string or datetime");
-                break;
-        }
-        return value;
-    }
-
-    private function parseBoolean(<TokenStream> ts) -> bool
-    {
-    	var result;
-    	let result = ts->getValue() == "true" ? true : false;
-        return result;
     }
 
 
@@ -440,7 +468,7 @@ class Parser
 
         if (preg_match("/^0\\d+/", value)) {
             this->syntaxError(
-                    "Invalid integer number: leading zeros are not allowed.", ts->getToken()
+                    "Invalid integer number: leading zeros are not allowed", ts->getToken()
             );
         }
 
@@ -474,26 +502,22 @@ class Parser
      * @param type $stripQuote
      * @return string
      */
-    private function parseBasicString(<TokenStream> ts) -> string
+    private function parseEscapeString(<TokenStream> ts) -> string
     {
         this->pushExpSet(Parser::E_BSTRING);
         
         int tokenId;
         string value;
-        var result = "";
+        var result;
 
-        let tokenId = (int) ts->getTokenId();
-        if (tokenId != Lexer::T_QUOTATION_MARK) {
-            this->throwTokenError(ts->getToken(), Lexer::T_QUOTATION_MARK);
-        }
-
+        let result = "";
         let tokenId = (int) ts->moveNextId();
         while (tokenId != Lexer::T_QUOTATION_MARK) {
         	
             if ((tokenId == Lexer::T_NEWLINE) || (tokenId == Lexer::T_EOS) || (tokenId
                     == Lexer::T_ESCAPE)) {
                 // throws
-                this->unexpectedTokenError(ts->getToken(), "This character is not valid");
+                this->syntaxError("Unfinished string value", ts->getToken());
             } elseif (tokenId == Lexer::T_ESCAPED_CHARACTER) {
                 let value = (string) this->parseEscapedCharacter(ts);
             } else {
@@ -506,17 +530,13 @@ class Parser
         return result;
     }
 
-    private function parseMultilineBasicString(<TokenStream> ts) -> string
+    private function parseMLEscapeString(<TokenStream> ts) -> string
     {
         // TODO: inline assert can be dropped in final version
         int tokenId;
         boolean doLoop;
         string result;
 
-        let tokenId = (int) ts->getTokenId();
-        if tokenId != Lexer::T_3_QUOTATION_MARK {
-            this->throwTokenError(ts->getToken(), Lexer::T_3_QUOTATION_MARK);
-        }
         this->pushExpSet(Parser::E_BSTRING);
 
         
@@ -529,7 +549,7 @@ class Parser
         while (doLoop) {
             switch (tokenId) {
                 case Lexer::T_3_QUOTATION_MARK :
-                    this->popExpSet();
+                    
                     let doLoop = false;
                     break;
                 case Lexer::T_EOS:
@@ -559,6 +579,7 @@ class Parser
                     break;
             }
         }
+        this->popExpSet();
         return result;
     }
 
@@ -570,41 +591,37 @@ class Parser
      */
     private function parseLiteralString(<TokenStream> ts) -> string
     {
-    	int tokenId;
+    	int id;
     	string result;
+        var token;
 
-    	let tokenId = (int) ts->getTokenId();
-        if tokenId != Lexer::T_APOSTROPHE {
-            this->throwTokenError(ts->getToken(), Lexer::T_APOSTROPHE);
-        }
-
-        this->pushExpSet(Parser::E_LSTRING);
-
-        let tokenId = (int) ts->moveNextId();
-
+        let token = ts->peekToken();
+        let id = (int) token->id;
         let result = "";
-        while (tokenId != Lexer::T_APOSTROPHE) {
-            if ((tokenId == Lexer::T_NEWLINE) || (tokenId == Lexer::T_EOS)) {
-                this->unexpectedTokenError(ts->getToken(), "This character is not valid.");
+        while (id !== Lexer::T_APOSTROPHE) {
+            if ((id === Lexer::T_NEWLINE) || (id === Lexer::T_EOS)) {
+                this->syntaxError("Incomplete literal string", ts->getToken());
             }
-            let result = result . (string) ts->getValue();
-            let tokenId =  (int) ts->moveNextId();
+            if (ts->moveRegex("/([^\\x{0}-\\x{19}\\x{27}]+)/u")) {
+                let result = result . (string) ts->getValue();
+                let token = ts->peekToken();
+                let id = (int) token->id;
+            }
+            else {
+                this->syntaxError("Bad literal string value", token);
+            }
         }
-        this->popExpSet();
+        ts->acceptToken();
         return result;
     }
 
-    private function parseMultilineLiteralString(<TokenStream> ts) -> string
+    private function parseMLString(<TokenStream> ts) -> string
     {
     	int tokenId;
     	string result;
+        boolean doLoop;
 
-    	let tokenId = (int) ts->getTokenId();
-        if (tokenId != Lexer::T_3_APOSTROPHE) {
-            this->throwTokenError(ts->getToken(), Lexer::T_3_APOSTROPHE);
-        }
-        this->pushExpSet(Parser::E_LSTRING);
-
+        this->pushExpSet(Parser::E_MLSTRING);
         let result = "";
 
         let tokenId = (int) ts->moveNextId();
@@ -612,70 +629,85 @@ class Parser
             let tokenId = (int) ts->moveNextId();
         }
 
-        while (true) {
+        let doLoop = true;
+        while (doLoop) {
+            switch(tokenId) {
+                case Lexer::T_NEWLINE:
+                    let result = result . "\n";
+                    let tokenId = (int) ts->moveNextId();
+                    break;
+                case Lexer::T_3_APOSTROPHE:
+                    let doLoop = false;
+                    break;  
+                case Lexer::T_EOS:
+                    this->syntaxError("Expected token { ''' }", ts->getToken());
+                    break;
+                default:
+                    let result = result . (string) ts->getValue();
+                    let tokenId = (int) ts->moveNextId();
+                    //echo "ML String " . result . " Next: " . tokenId . PHP_EOL;
+                    break;
+            }
 
-            if (tokenId == Lexer::T_3_APOSTROPHE) {
-                break;
-            }
-            if (tokenId == Lexer::T_EOS) {
-                this->unexpectedTokenError(ts->getToken(), "Expected token T_3_APOSTROPHE");
-            }
-            let result = result . (string) ts->getValue();
-            let tokenId = (int) ts->moveNextId();
         }
         this->popExpSet();
-
-        if (tokenId != Lexer::T_3_APOSTROPHE) {
-            this->throwTokenError(ts->getToken(), Lexer::T_3_APOSTROPHE);
-        }
-
         return result;
     }
 
     private function parseEscapedCharacter(<TokenStream> ts) -> string
     {
-    	string value;
+    	string result, value;
+        var matches;
     	int ct;
         let value = (string) ts->getValue();
-        
+        //echo "Escaped " . value . PHP_EOL;
         let ct = value->length();
 
-        if (ct == 2) {
-        	string c1;
-        	let c1 = (string) substr(value,1,1);
+        if (ct == 1) {
 
-        	switch(c1) {
+        	switch(value) {
         		case "n":
-        			return "\n";
+        			let result = "\n";
+                    break;
         		case "t":
-        			return "\t";
+        			let result = "\t";
+                    break;
         		case "r":
-        			return "\r";
+        			let result = "\r";
+                    break;
     			case "b":
-    				return "\b";
+    				let result = (string) chr(8);
+                    break;
 				case "f": 
-					return chr(12);
+					let result = (string) chr(12);
+                    break;
     			case "\\":
-    				return  "\\";
+    				let result = "\\";
+                    break;
     			case "\"":
-    				return "\"";
-    			default:
-    			break;
+    				let result = "\"";
+    			    break;
+                default:
+                    throw new XArrayable("Invalid escape line " . ts->getLine() . " \\" . value);
     		}
         }
-    	
-       
-
-        if ct == 6 {
-        	//echo "Length 6" . PHP_EOL;
-            return json_decode("\"" . value . "\"");
+    	elseif ct == 5 {
+            let result = (string) json_decode("\"\\" . value . "\"");
+            //echo "JSON-5 " . value . " is " . result . PHP_EOL;
         }
-
-        var matches = null;
-        //echo "U match " . value . PHP_EOL;
-        preg_match("/\\\\U([0-9a-fA-F]{4})([0-9a-fA-F]{4})/", value, matches);
-
-        return json_decode("\"\\u" . matches[1] . "\\u" . matches[2] . "\"");
+        else {
+            let matches = null;
+            //echo "U match " . value . PHP_EOL;
+            if (preg_match("/U([0-9a-fA-F]{4})([0-9a-fA-F]{4})/", value, matches)) {
+                let result = (string) json_decode("\"\\u" . matches[1] . "\\u" . matches[2] . "\"");
+            }
+            else {
+                throw new XArrayable("Fail unicode match " . ts->getLine() . " \\" . value);
+            }
+            //echo "JSON-7 " . value . " is " . result . PHP_EOL;
+        }
+        //echo "Escape result = " . result . PHP_EOL;
+        return result;
     }
 
     private function parseDatetime(<TokenStream> ts) -> <Datetime>
@@ -692,30 +724,64 @@ class Parser
      */
     private function parseArray(<TokenStream> ts) -> <ValueList>
     {
-        int tokenId, rct;
+        var token;
         var value;
         var result, e;
-
-        let tokenId = (int) ts->getTokenId();
-        if (tokenId != Lexer::T_LEFT_SQUARE_BRACE) {
-            this->throwTokenError(ts->getToken(), Lexer::T_LEFT_SQUARE_BRACE);
-        }
+        int rct, id;
+        boolean doLoop, gotComma;
+        // Assert called here because a '[' was parsed
         let result = new ValueList();
-        let tokenId = (int) ts->moveNextId();
-        while (tokenId == Lexer::T_SPACE || tokenId == Lexer::T_NEWLINE) {
-            let tokenId = (int) ts->moveNextId();
+        
+
+        let doLoop = true;
+        let token =  ts->peekToken();
+        let id = (int) token->id;
+        while(doLoop) {
+            switch(id) {
+                case Lexer::T_SPACE:
+                    // swallow immediate space
+                    ts->moveRegex(Parser::IM_SPACE);
+                    let token = ts->peekToken();
+                    let id = (int) token->id;
+                    break; 
+                case Lexer::T_NEWLINE:
+                    ts->acceptToken();
+                    let token = ts->peekToken();
+                    let id = (int) token->id;
+                    break;
+                case Lexer::T_HASH:
+                    ts->acceptToken();
+                    this->parseComment(ts); 
+                    let token = ts->peekToken();
+                    let id = (int) token->id;
+                    break; 
+                case Lexer::T_EOS:
+                    ts->acceptToken();
+                    throw new XArrayable("Unfinished array");
+                 case Lexer::T_RIGHT_SQUARE_BRACE:
+                    // empty array
+                    ts->acceptToken(); 
+                default:
+                    let doLoop = false;
+                    break;
+            }
         }
-        if (tokenId == Lexer::T_HASH) {
-            let tokenId = (int) this->parseCommentsAndSpace(ts);
-        }
-            
+
+        //echo "parseArray id " . id . PHP_EOL;
         let rct = 0;
-        while (tokenId != Lexer::T_RIGHT_SQUARE_BRACE) {
-            if (tokenId == Lexer::T_LEFT_SQUARE_BRACE) {
-                let value = this->parseArray(ts);
+        while (id != Lexer::T_RIGHT_SQUARE_BRACE) {
+            if (id == Lexer::T_LEFT_SQUARE_BRACE) {
+                ts->acceptToken(); 
+                if (result->allowType("object")) {
+                    let value = this->parseArray(ts);
+                }
+                else {
+                    throw new XArrayable( "Cannot add array to list of " 
+                        . result->getType() . " at line " . ts->getLine());
+                }
             } else {
                 // Returned value is a singular class instance to pass parameters
-                let value = this->parseSimpleValue(ts);
+                let value = this->getSimpleValue(id);
             }
 
             try {
@@ -726,33 +792,53 @@ class Parser
 	        	throw new XArrayable( e->getMessage() . " at line " . ts->getLine());
 	        }
 
-            let tokenId = (int) ts->moveNextId();
-            while (tokenId === Lexer::T_SPACE || tokenId === Lexer::T_NEWLINE) {
-                let tokenId = (int)ts->moveNextId();
-            }
+            let token = ts->peekToken();
+            //echo "parseArray token " . print_r(token, true) . PHP_EOL;
+            let id = (int) token->id;
+            let gotComma = false;
+            let doLoop = true;
+            while(doLoop)
+            {
 
-             if (tokenId == Lexer::T_HASH) {
-                let tokenId = (int)this->parseCommentsAndSpace(ts);
-            }
-            
-            if (tokenId == Lexer::T_COMMA) {
-                //easy, to another value
-                let tokenId = (int)ts->moveNextId();
-            }
-            elseif (tokenId != Lexer::T_RIGHT_SQUARE_BRACE) {
-                // should be finished
-                this->unexpectedTokenError(ts->getToken(),"Expect '.' or ']' after array item");
-            }
-
-            while (tokenId == Lexer::T_SPACE || tokenId == Lexer::T_NEWLINE) {
-                let tokenId = (int)ts->moveNextId();
-            }
-
-            if (tokenId == Lexer::T_HASH) {
-                let tokenId = (int)this->parseCommentsAndSpace(ts);
+                //echo "parseArray switch " . id . PHP_EOL;
+                switch(id) {
+                    case Lexer::T_SPACE:
+                        // swallow immediate space
+                        ts->moveRegex(Parser::IM_SPACE);
+                        let token = ts->peekToken();
+                        let id = (int) token->id;
+                        break;
+                    case Lexer::T_NEWLINE:
+                        ts->acceptToken();
+                        let token = ts->peekToken();
+                        let id = (int) token->id;
+                        break;
+                    case Lexer::T_HASH:
+                        ts->acceptToken();
+                        this->parseComment(ts); 
+                        let token = ts->peekToken();
+                        let id = (int) token->id;
+                        break;
+                    case Lexer::T_COMMA:
+                        if gotComma {
+                            throw new XArrayable("No value between commas");
+                        }
+                        else {
+                            let gotComma = true;
+                        }
+                        ts->acceptToken();
+                        let token = ts->peekToken();
+                        let id = (int) token->id;
+                        break;
+                    case Lexer::T_RIGHT_SQUARE_BRACE:
+                        ts->acceptToken();
+                    default:
+                        let doLoop = false;
+                        break;
+                } 
             }
         }
-        if (tokenId != Lexer::T_RIGHT_SQUARE_BRACE) {
+        if (id != Lexer::T_RIGHT_SQUARE_BRACE) {
             this->throwTokenError(ts->getToken(), Lexer::T_RIGHT_SQUARE_BRACE);
         }
 
@@ -783,11 +869,7 @@ class Parser
     {
     	int tokenId;
     	var priorTable;
-
-    	let tokenId = (int) ts->getTokenId();
-        if (tokenId != Lexer::T_LEFT_CURLY_BRACE) {
-            this->throwTokenError(ts->getToken(), Lexer::T_LEFT_CURLY_BRACE);
-        }
+        // Assert called here because parsed a '{'
         this->pushExpSet(Parser::E_KEY); // looking for keys
 
         let priorTable = this->_table;
@@ -837,15 +919,10 @@ class Parser
     {
     	var tokenId;
 
-        let tokenId = ts->getTokenId();
-        if (tokenId === Lexer::T_SPACE) {
-            let tokenId = ts->moveNextId();
-        }
-        if (tokenId === Lexer::T_HASH) {
-            let tokenId = this->parseComment($ts);
-        }
+        ts->moveRegex("/^(\\s*#\\V*|\\s*)/");
+        let tokenId = ts->moveNextId(); 
         if (tokenId !== Lexer::T_NEWLINE && tokenId !== Lexer::T_EOS) {
-            this->unexpectedTokenError(ts->getToken(), "Expected T_NEWLINE or T_EOS.");
+            this->syntaxError("Expected NEWLINE or EOS",ts->getToken());
         }
         return tokenId;
     }
@@ -955,7 +1032,7 @@ class Parser
                         let tokenId = (int) ts->moveNextId();
  
                     } else {
-                        let tokenId = (int) ts->moveNextId();
+                        //let tokenId = (int) ts->moveNextId();
                         let doLoop = false;
 
                     }
@@ -1090,6 +1167,7 @@ class Parser
      */
     private function parseTablePath(<TokenStream> ts) -> int
     {
+        //echo "parseTablePath" . PHP_EOL;
         this->parseObjectPath(ts);
 
         return this->finishLine(ts);
@@ -1103,7 +1181,7 @@ class Parser
         var tokenName;
 
         let tokenName = Lexer::tokenName(expectedId);
-        this->unexpectedTokenError(token, "Expected " . tokenName);
+        this->syntaxError("Expected " . tokenName, token);
     }
 
 
@@ -1114,70 +1192,43 @@ class Parser
     private function parseCommentsAndSpace(<TokenStream> ts) -> int
     {
     	int tokenId;
+        boolean doLoop;
         let tokenId = (int)ts->getTokenId();
-        if (tokenId == Lexer::T_HASH) {
-            let tokenId = (int)this->parseComment(ts);
-        }
-        while (tokenId == Lexer::T_NEWLINE) {
-            let tokenId = (int)ts->moveNextId();
-            if (tokenId == Lexer::T_SPACE) {
-                let tokenId = (int)ts->moveNextId();
-            }
-            if (tokenId == Lexer::T_HASH) {
-                let tokenId = (int)this->parseComment(ts);
+        let doLoop = true;
+        while(doLoop) {
+            switch(tokenId) {
+            case Lexer::T_HASH:
+                let tokenId = (int) this->parseComment(ts);
+                break;
+            case Lexer::T_NEWLINE:
+                let tokenId = (int) ts->moveNextId();
+                break;
+            case Lexer::T_SPACE:
+                ts->moveRegex(Parser::IM_SPACE);
+                let tokenId = (int) ts->moveNextId();
+                break;
+            default:
+                let doLoop = false;
+                break;
             }
         }
         return tokenId;
     }
 
-    private function errorUniqueKey(string! keyName)
+
+    private function syntaxError(string! msg, <Token> token) -> void
     {
-        this->syntaxError(sprintf(
-                        "The key { %s } has already been defined previously.", keyName
-        ));
-    }
-
-
-
-    private function unexpectedTokenError(<Token> token, string expectedMsg = null) -> void
-    {
-    	string name, value, msg;
+    	string value;
     	int line;
 
-        let name = (string) Lexer::tokenName(token->id);
         let line = token->line;
         let value = token->value;
-
-        let msg = (string) sprintf("Syntax error: unexpected token %s at line %s", name, line);
-        //echo "Test Message " . msg . PHP_EOL;
-        if !token->isSingle {
-            let msg = msg . " value { '" . value . "' }. ";
-        } else {
+        let msg = "Error line " . line . ": " . msg;
+        if strlen(value) > 0 {
+            let msg = msg . self::valueWrap(value);
+        }
+        else {
             let msg = msg .  ".";
-        }
-        if !empty expectedMsg {
-             let msg = msg .  " " . expectedMsg;
-        }
-
-        throw new XArrayable(msg);
-    }
-
-    private function syntaxError(string! msg, <Token> token = null) -> void
-    {
-    	string name, value, tokenMsg;
-    	int line;
-
-        if !empty(token) {
-            let name = (string) Lexer::tokenName(token->id);
-            let line = token->line;
-            let value = token->value;
-            let tokenMsg = (string) sprintf(" Token: %s line: %s", name, line);
-            if !token->isSingle {
-                let tokenMsg = tokenMsg . " value { '" . value . "' }.";
-            } else {
-                let tokenMsg = tokenMsg . ".";
-            }
-            let msg  = msg . tokenMsg;
         }
         throw new XArrayable(msg);
     }

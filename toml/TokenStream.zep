@@ -37,14 +37,17 @@ class TokenStream
         let this->_unknownId = $id;
     }
 
-    public function getExpMap() -> var {
+   /**
+     * Return current expression set object
+     */
+    public function getExpSet() -> var {
         return this->_regex;
     }
     /**
      * Argument is reference to associative array[int] of string regular expressions
      * @param array $ref
      */
-    public function setExpList(var obj) -> void {
+    public function setExpSet(var obj) -> void {
         let this->_regex = obj;
     }
     /** 
@@ -114,6 +117,120 @@ class TokenStream
         let this->_offset = 0;
         let this->_lineCount = ct;
         let this->_curLine = (ct > 0) ? boxed->_me[0] : null;
+    }
+/** Return the single character at the front of the parse. 
+     *  Does not alter this objects internal state values,
+     *  except for properties of Token, which must be treated as read-only. 
+     *  Maybe can use this to 'predict' the next expression set to use.
+     *  Return "value" and single character TokenId in the Token.
+     *  Cannot return tokenId for multi-character regular expressions,
+     *  which is the whole idea.
+     */
+    public function peekToken() -> <Token> {
+        // Put next characters in $test, not altering TokenStream state.
+        var test;
+        var token;
+        int nextLine;
+
+        let test = this->_curLine;
+        let token = this->_token;
+        if empty test {
+            let nextLine = (int) this->_lineNo + 1;
+            let token->line = nextLine;
+            let token->isSingle = true;
+            if nextLine < this->_lineCount {
+                let token->value = "";
+                let token->id = this->_newLineId;  
+            }
+            else {
+                let token->value = "";
+                let token->id = this->_eosId;
+            }
+            return token;
+        }
+        var uni;
+
+        let uni = mb_substr(test, 0, 1); // possible to be multi-byte character
+        let token->value = uni;
+        let token->line = this->_tokenLine;
+        if !this->_singles->offsetExists(uni) {
+            let token->id = this->_unknownId;
+            let token->_isSingle = false;
+        }
+        else {
+            let token->id = (int) this->_singles->offsetGet(uni);
+            let token->_isSingle = true;
+        }
+        return  token;
+    }
+/**
+     * If a peekNextChar has been done, this uses internal Token values to 
+     * advance the parse (namely the string length of the value),
+     * on the current line. It is important that token values have not been altered,
+     * and parse position has not been altered prior to calling this method.
+     * 
+     * A call to getToken, will still return same values as the Token;
+     */
+    public function acceptToken() -> void {
+        var token;
+
+        let token = this->_token;
+        if token->id === this->_eosId {
+            let this->_value = "";
+            let this->_id = this->_eosId;
+            return;
+        }
+        elseif token->id === this->_newLineId {
+            int nextLine;
+            // do the next line
+            let nextLine = (int) this->_lineNo + 1;
+            let this->_curLine = this->_lines->_me[nextLine];
+            let this->_offset = 0;
+            let this->_value = "";
+            let this->_id = this->_newLineId;
+            let this->_lineNo = nextLine;
+            return;
+        }
+        elseif this->_offset === 0 {
+            let this->_tokenLine = this->_lineNo + 1;
+        }
+        int takeoff;
+
+        let takeoff = (int) strlen(token->value);
+        let this->_curLine = substr(this->_curLine, takeoff);
+        let this->_offset =  this->_offset + takeoff;
+        let this->_id = token->id;
+        let this->_isSingle = token->isSingle;
+        let this->_value = token->value;
+        return;
+    }
+    /**
+     * Try regular expression, and return capture, if any.
+     * Assumes previous peekToken returned a known token.
+     * Leaves tokenId as unknownId.
+     * 
+     * @param string $pattern 
+     * @return boolean , true if match found
+     * Pattern must be such that preg_match can return match
+     *  array with 2 items.
+     *  If returns true, then getValue() returns the capture.
+     */
+    public function moveRegex(string! pattern) -> boolean {
+        var test;
+        int takeOff;
+        var matches;
+        let test = this->_curLine;
+        let matches = null;
+        if (preg_match(pattern, test, matches)) {
+            let this->_value = matches[1];
+            let this->_isSingle = false;
+            let this->_id = this->_unknownId;
+            let takeOff = strlen(matches[0]);
+            let this->_offset = this->_offset + takeOff;
+            let this->_curLine = substr(test, takeOff);
+            return true;
+        }   
+        return false;
     }
 
 /** 

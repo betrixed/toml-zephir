@@ -1,0 +1,73 @@
+# requires defines to be set for PHP_DIR, ROOT_DIR, APP_PATH
+1 = 'one' # test toml for integer->string keys
+configType = "module"
+defaultModule = "app"
+modulesDir = '${PHP_DIR}/modules'
+modulesBootstrap = 'mod_bootstrap.php'
+timezone = 'Australia/Sydney'
+logErrors = true
+errorLog = '${PHP_DIR}/log/error.log'
+offline = false
+loader = { Pcan = '${PHP_DIR}/Pcan', Phalcon = '${PHP_DIR}/vendor/phalcon/incubator/Library/Phalcon' }
+# module_list = ['modtools', 'test', 'app', 'admin', 'chimp'] 
+
+# A new table has to be declared before its sub-tables
+[module_data] 
+alias='test'
+
+[module_data.modtools]
+dir = '${PHP_DIR}/vendor/phalcon/devtools/scripts/Phalcon/Web/ModTools'
+namespace = 'ModTools'
+bootstrap = 'tools_bootstrap.php'
+
+[module_data.define]
+PTOOLSPATH = '${PHP_DIR}/vendor/phalcon/devtools'
+BASE_PATH = '${ROOT_DIR}/private' 
+
+[module_data.app]
+dir = '${PHP_DIR}/modules/app'
+namespace = 'Mod\App'
+bootstrap = 'app_bootstrap.php'
+
+[module_data.test]
+dir = '${PHP_DIR}/modules/test'
+namespace = 'Test'
+bootstrap = 'test_bootstrap.php'
+
+[module_data.admin]
+namespace = 'Mod\Admin'
+bootstrap = 'admin_bootstrap.php'
+
+[module_data.chimp]
+dir = '${PHP_DIR}/modules/chimp'
+namespace = 'Chimp'
+bootstrap = 'chimp_bootstrap.php'
+enabled = true
+
+[application]
+# Table 'application' is used by phalcon-devtools generation.
+# Multi-module default module is 'app'
+
+modelsDir = "${APP_PATH}/models"
+appDir = '${APP_PATH}'
+controllersDir = '${APP_PATH}/Controllers'
+migrationsDir = '${PHP_DIR}/setup/db/test'
+viewsDir = '${APP_PATH}/views'
+pluginsDir = '${APP_PATH}/plugins'
+libraryDir = '${APP_PATH}/library'
+cacheDir = '${PHP_DIR}/cache'
+
+# For 'url' service, used in view templates. 
+baseURI = '/'
+metaDataDir = '${PHP_DIR}/cache/metadata'
+
+[database]
+host = "localhost"
+#  username = "sapcan"
+#  password = 'LeardF0rr3$5'
+#  dbname = "pcan"
+username = "can007"
+password = "(*)weistheBEST" 
+dbname = "setdev" 
+adapter = 'Mysql'
+charset = 'utf8'

@@ -7,8 +7,8 @@ PHP_METHOD(Toml_TokenStream, __construct);
 PHP_METHOD(Toml_TokenStream, setEOSId);
 PHP_METHOD(Toml_TokenStream, setNewLineId);
 PHP_METHOD(Toml_TokenStream, setUnknownId);
-PHP_METHOD(Toml_TokenStream, getExpMap);
-PHP_METHOD(Toml_TokenStream, setExpList);
+PHP_METHOD(Toml_TokenStream, getExpSet);
+PHP_METHOD(Toml_TokenStream, setExpSet);
 PHP_METHOD(Toml_TokenStream, setSingles);
 PHP_METHOD(Toml_TokenStream, setInput);
 PHP_METHOD(Toml_TokenStream, getLine);
@@ -17,6 +17,9 @@ PHP_METHOD(Toml_TokenStream, getToken);
 PHP_METHOD(Toml_TokenStream, getValue);
 PHP_METHOD(Toml_TokenStream, getTokenId);
 PHP_METHOD(Toml_TokenStream, setLines);
+PHP_METHOD(Toml_TokenStream, peekToken);
+PHP_METHOD(Toml_TokenStream, acceptToken);
+PHP_METHOD(Toml_TokenStream, moveRegex);
 PHP_METHOD(Toml_TokenStream, moveNextId);
 PHP_METHOD(Toml_TokenStream, parseNextId);
 
@@ -32,7 +35,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_tokenstream_setunknownid, 0, 0, 1)
 	ZEND_ARG_INFO(0, id)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_tokenstream_setexplist, 0, 0, 1)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_tokenstream_setexpset, 0, 0, 1)
 	ZEND_ARG_INFO(0, obj)
 ZEND_END_ARG_INFO()
 
@@ -48,6 +51,10 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_tokenstream_setlines, 0, 0, 1)
 	ZEND_ARG_INFO(0, boxed)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_tokenstream_moveregex, 0, 0, 1)
+	ZEND_ARG_INFO(0, pattern)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_tokenstream_parsenextid, 0, 0, 1)
 	ZEND_ARG_INFO(0, patterns)
 ZEND_END_ARG_INFO()
@@ -57,8 +64,8 @@ ZEPHIR_INIT_FUNCS(toml_tokenstream_method_entry) {
 	PHP_ME(Toml_TokenStream, setEOSId, arginfo_toml_tokenstream_seteosid, ZEND_ACC_PUBLIC)
 	PHP_ME(Toml_TokenStream, setNewLineId, arginfo_toml_tokenstream_setnewlineid, ZEND_ACC_PUBLIC)
 	PHP_ME(Toml_TokenStream, setUnknownId, arginfo_toml_tokenstream_setunknownid, ZEND_ACC_PUBLIC)
-	PHP_ME(Toml_TokenStream, getExpMap, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(Toml_TokenStream, setExpList, arginfo_toml_tokenstream_setexplist, ZEND_ACC_PUBLIC)
+	PHP_ME(Toml_TokenStream, getExpSet, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Toml_TokenStream, setExpSet, arginfo_toml_tokenstream_setexpset, ZEND_ACC_PUBLIC)
 	PHP_ME(Toml_TokenStream, setSingles, arginfo_toml_tokenstream_setsingles, ZEND_ACC_PUBLIC)
 	PHP_ME(Toml_TokenStream, setInput, arginfo_toml_tokenstream_setinput, ZEND_ACC_PUBLIC)
 	PHP_ME(Toml_TokenStream, getLine, NULL, ZEND_ACC_PUBLIC)
@@ -67,6 +74,9 @@ ZEPHIR_INIT_FUNCS(toml_tokenstream_method_entry) {
 	PHP_ME(Toml_TokenStream, getValue, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Toml_TokenStream, getTokenId, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Toml_TokenStream, setLines, arginfo_toml_tokenstream_setlines, ZEND_ACC_PUBLIC)
+	PHP_ME(Toml_TokenStream, peekToken, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Toml_TokenStream, acceptToken, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Toml_TokenStream, moveRegex, arginfo_toml_tokenstream_moveregex, ZEND_ACC_PUBLIC)
 	PHP_ME(Toml_TokenStream, moveNextId, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Toml_TokenStream, parseNextId, arginfo_toml_tokenstream_parsenextid, ZEND_ACC_PRIVATE)
 	PHP_FE_END

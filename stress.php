@@ -79,9 +79,8 @@ class Stress
 
     public function parseFile($file)
     {
-
         $data = Parser::parseFile($file);
-        //echo "OUTPUT = " . print_r($data,true) . PHP_EOL;
+        echo "OUTPUT = " . print_r($data,true) . PHP_EOL;
     }
 
     public function tokenFile($file)
@@ -148,7 +147,7 @@ class Stress
         $monitorMe = new Class{};
         echo "Start Outer" . PHP_EOL;
 
-        $file = TOP_DIR . "/files/fruit.toml";
+        $file = TOP_DIR . "/files/escaped_strings.toml";
         $i = 0;
         $startMem = $endMem = 0;
         $memInit = memory_get_usage();

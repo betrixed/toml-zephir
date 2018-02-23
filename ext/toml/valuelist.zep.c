@@ -15,11 +15,11 @@
 #include "kernel/object.h"
 #include "kernel/memory.h"
 #include "kernel/operators.h"
+#include "ext/spl/spl_exceptions.h"
 #include "kernel/exception.h"
 #include "kernel/fcall.h"
 #include "kernel/concat.h"
 #include "kernel/array.h"
-#include "ext/spl/spl_exceptions.h"
 
 
 /**
@@ -66,6 +66,47 @@ PHP_METHOD(Toml_ValueList, __construct) {
 	array_init(&_0);
 	zephir_update_property_zval(this_ptr, SL("_list"), &_0);
 	ZEPHIR_MM_RESTORE();
+
+}
+
+PHP_METHOD(Toml_ValueList, allowType) {
+
+	zend_bool _1;
+	zval *type_param = NULL, _0, _2$$4;
+	zval type;
+	zval *this_ptr = getThis();
+
+	ZVAL_UNDEF(&type);
+	ZVAL_UNDEF(&_0);
+	ZVAL_UNDEF(&_2$$4);
+
+	ZEPHIR_MM_GROW();
+	zephir_fetch_params(1, 1, 0, &type_param);
+
+	if (UNEXPECTED(Z_TYPE_P(type_param) != IS_STRING && Z_TYPE_P(type_param) != IS_NULL)) {
+		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'type' must be a string") TSRMLS_CC);
+		RETURN_MM_NULL();
+	}
+	if (EXPECTED(Z_TYPE_P(type_param) == IS_STRING)) {
+		zephir_get_strval(&type, type_param);
+	} else {
+		ZEPHIR_INIT_VAR(&type);
+		ZVAL_EMPTY_STRING(&type);
+	}
+
+
+	ZEPHIR_OBS_VAR(&_0);
+	zephir_read_property(&_0, this_ptr, SL("_type"), PH_NOISY_CC);
+	_1 = ZEPHIR_IS_EMPTY(&_0);
+	if (_1) {
+		_1 = !(ZEPHIR_IS_EMPTY(&type));
+	}
+	if (_1) {
+		RETURN_MM_BOOL(1);
+	} else {
+		zephir_read_property(&_2$$4, this_ptr, SL("_type"), PH_NOISY_CC | PH_READONLY);
+		RETURN_MM_BOOL((ZEPHIR_IS_IDENTICAL(&type, &_2$$4)));
+	}
 
 }
 
@@ -130,9 +171,9 @@ PHP_METHOD(Toml_ValueList, offsetSet) {
 		zephir_read_property(&_3$$4, this_ptr, SL("_type"), PH_NOISY_CC | PH_READONLY);
 		ZEPHIR_INIT_VAR(&_4$$4);
 		ZEPHIR_CONCAT_SVSV(&_4$$4, "Type ", &vtype, " cannot be added to ValueList of ", &_3$$4);
-		ZEPHIR_CALL_METHOD(NULL, &_2$$4, "__construct", NULL, 18, &_4$$4);
+		ZEPHIR_CALL_METHOD(NULL, &_2$$4, "__construct", NULL, 16, &_4$$4);
 		zephir_check_call_status();
-		zephir_throw_exception_debug(&_2$$4, "toml/ValueList.zep", 41 TSRMLS_CC);
+		zephir_throw_exception_debug(&_2$$4, "toml/ValueList.zep", 50 TSRMLS_CC);
 		ZEPHIR_MM_RESTORE();
 		return;
 	}
@@ -141,7 +182,7 @@ PHP_METHOD(Toml_ValueList, offsetSet) {
 	if (ZEPHIR_IS_EMPTY(offset)) {
 		ZEPHIR_CPY_WRT(offset, &ct);
 	} else if (!ZEPHIR_IS_STRING_IDENTICAL(&_5, "integer")) {
-		ZEPHIR_THROW_EXCEPTION_DEBUG_STR(toml_xarrayable_ce, "ValueList only takes integer offsets", "toml/ValueList.zep", 47);
+		ZEPHIR_THROW_EXCEPTION_DEBUG_STR(toml_xarrayable_ce, "ValueList only takes integer offsets", "toml/ValueList.zep", 56);
 		return;
 	}
 	zephir_update_property_array(this_ptr, SL("_list"), offset, value TSRMLS_CC);
@@ -184,7 +225,7 @@ PHP_METHOD(Toml_ValueList, offsetGet) {
 
 	zephir_read_property(&_0, this_ptr, SL("_list"), PH_NOISY_CC | PH_READONLY);
 	ZEPHIR_OBS_VAR(&_1);
-	zephir_array_fetch_long(&_1, &_0, offset, PH_NOISY, "toml/ValueList.zep", 59 TSRMLS_CC);
+	zephir_array_fetch_long(&_1, &_0, offset, PH_NOISY, "toml/ValueList.zep", 68 TSRMLS_CC);
 	RETURN_CCTOR(&_1);
 
 }
@@ -244,7 +285,7 @@ PHP_METHOD(Toml_ValueList, get) {
 	zephir_read_property(&_0, this_ptr, SL("_list"), PH_NOISY_CC | PH_READONLY);
 	if (zephir_array_isset_long(&_0, offset)) {
 		zephir_read_property(&_1$$3, this_ptr, SL("_list"), PH_NOISY_CC | PH_READONLY);
-		zephir_array_fetch_long(&_2$$3, &_1$$3, offset, PH_NOISY | PH_READONLY, "toml/ValueList.zep", 76 TSRMLS_CC);
+		zephir_array_fetch_long(&_2$$3, &_1$$3, offset, PH_NOISY | PH_READONLY, "toml/ValueList.zep", 85 TSRMLS_CC);
 		RETURN_CTORW(&_2$$3);
 	} else {
 		RETVAL_ZVAL(defaultValue, 1, 0);
@@ -293,7 +334,7 @@ PHP_METHOD(Toml_ValueList, toArray) {
 	ZEPHIR_INIT_VAR(&result);
 	array_init(&result);
 	zephir_read_property(&_0, this_ptr, SL("_list"), PH_NOISY_CC | PH_READONLY);
-	zephir_is_iterable(&_0, 0, "toml/ValueList.zep", 105);
+	zephir_is_iterable(&_0, 0, "toml/ValueList.zep", 114);
 	ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(&_0), _2, _3, _1)
 	{
 		ZEPHIR_INIT_NVAR(&idx);

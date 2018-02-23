@@ -72,7 +72,7 @@ PHP_METHOD(Toml_TokenStream, __construct) {
 
 	ZEPHIR_INIT_VAR(&_0);
 	object_init_ex(&_0, toml_token_ce);
-	ZEPHIR_CALL_METHOD(NULL, &_0, "__construct", NULL, 64);
+	ZEPHIR_CALL_METHOD(NULL, &_0, "__construct", NULL, 63);
 	zephir_check_call_status();
 	zephir_update_property_zval(this_ptr, SL("_token"), &_0);
 	ZEPHIR_MM_RESTORE();
@@ -148,7 +148,10 @@ PHP_METHOD(Toml_TokenStream, setUnknownId) {
 
 }
 
-PHP_METHOD(Toml_TokenStream, getExpMap) {
+/**
+ * Return current expression set object
+ */
+PHP_METHOD(Toml_TokenStream, getExpSet) {
 
 	zval *this_ptr = getThis();
 
@@ -161,7 +164,7 @@ PHP_METHOD(Toml_TokenStream, getExpMap) {
  * Argument is reference to associative array[int] of string regular expressions
  * @param array $ref
  */
-PHP_METHOD(Toml_TokenStream, setExpList) {
+PHP_METHOD(Toml_TokenStream, setExpSet) {
 
 	zval *obj, obj_sub;
 	zval *this_ptr = getThis();
@@ -226,7 +229,7 @@ PHP_METHOD(Toml_TokenStream, setInput) {
 	object_init_ex(&boxme, toml_box_ce);
 	ZEPHIR_INIT_VAR(&_0);
 	zephir_fast_explode_str(&_0, SL("\n"), &input, LONG_MAX TSRMLS_CC);
-	ZEPHIR_CALL_METHOD(NULL, &boxme, "__construct", NULL, 65, &_0);
+	ZEPHIR_CALL_METHOD(NULL, &boxme, "__construct", NULL, 64, &_0);
 	zephir_check_call_status();
 	ZEPHIR_CALL_METHOD(NULL, this_ptr, "setlines", NULL, 0, &boxme);
 	zephir_check_call_status();
@@ -348,13 +351,300 @@ PHP_METHOD(Toml_TokenStream, setLines) {
 	if (ZEPHIR_GT_LONG(&ct, 0)) {
 		zephir_read_property(&_1, boxed, SL("_me"), PH_NOISY_CC | PH_READONLY);
 		ZEPHIR_OBS_NVAR(&_2);
-		zephir_array_fetch_long(&_2, &_1, 0, PH_NOISY, "toml/TokenStream.zep", 116 TSRMLS_CC);
+		zephir_array_fetch_long(&_2, &_1, 0, PH_NOISY, "toml/TokenStream.zep", 119 TSRMLS_CC);
 	} else {
 		ZEPHIR_INIT_NVAR(&_2);
 		ZVAL_NULL(&_2);
 	}
 	zephir_update_property_zval(this_ptr, SL("_curLine"), &_2);
 	ZEPHIR_MM_RESTORE();
+
+}
+
+/** Return the single character at the front of the parse. 
+ *  Does not alter this objects internal state values,
+ *  except for properties of Token, which must be treated as read-only. 
+ *  Maybe can use this to 'predict' the next expression set to use.
+ *  Return "value" and single character TokenId in the Token.
+ *  Cannot return tokenId for multi-character regular expressions,
+ *  which is the whole idea.
+ */
+PHP_METHOD(Toml_TokenStream, peekToken) {
+
+	zend_long ZEPHIR_LAST_CALL_STATUS, nextLine = 0;
+	zval __$true, __$false, test, token, uni, _6, _7, _8, _0$$3, _1$$3, _2$$4, _3$$4, _4$$5, _5$$5, _9$$6, _10$$7, _11$$7, _12$$7;
+	zval *this_ptr = getThis();
+
+	ZVAL_BOOL(&__$true, 1);
+	ZVAL_BOOL(&__$false, 0);
+	ZVAL_UNDEF(&test);
+	ZVAL_UNDEF(&token);
+	ZVAL_UNDEF(&uni);
+	ZVAL_UNDEF(&_6);
+	ZVAL_UNDEF(&_7);
+	ZVAL_UNDEF(&_8);
+	ZVAL_UNDEF(&_0$$3);
+	ZVAL_UNDEF(&_1$$3);
+	ZVAL_UNDEF(&_2$$4);
+	ZVAL_UNDEF(&_3$$4);
+	ZVAL_UNDEF(&_4$$5);
+	ZVAL_UNDEF(&_5$$5);
+	ZVAL_UNDEF(&_9$$6);
+	ZVAL_UNDEF(&_10$$7);
+	ZVAL_UNDEF(&_11$$7);
+	ZVAL_UNDEF(&_12$$7);
+
+	ZEPHIR_MM_GROW();
+
+	ZEPHIR_OBS_VAR(&test);
+	zephir_read_property(&test, this_ptr, SL("_curLine"), PH_NOISY_CC);
+	ZEPHIR_OBS_VAR(&token);
+	zephir_read_property(&token, this_ptr, SL("_token"), PH_NOISY_CC);
+	if (ZEPHIR_IS_EMPTY(&test)) {
+		ZEPHIR_OBS_VAR(&_0$$3);
+		zephir_read_property(&_0$$3, this_ptr, SL("_lineNo"), PH_NOISY_CC);
+		nextLine = (zephir_get_intval(&_0$$3) + 1);
+		ZEPHIR_INIT_ZVAL_NREF(_1$$3);
+		ZVAL_LONG(&_1$$3, nextLine);
+		zephir_update_property_zval(&token, SL("line"), &_1$$3);
+		if (1) {
+			zephir_update_property_zval(&token, SL("isSingle"), &__$true);
+		} else {
+			zephir_update_property_zval(&token, SL("isSingle"), &__$false);
+		}
+		zephir_read_property(&_1$$3, this_ptr, SL("_lineCount"), PH_NOISY_CC | PH_READONLY);
+		if (ZEPHIR_GT_LONG(&_1$$3, nextLine)) {
+			ZEPHIR_INIT_VAR(&_2$$4);
+			ZEPHIR_INIT_NVAR(&_2$$4);
+			ZVAL_STRING(&_2$$4, "");
+			zephir_update_property_zval(&token, SL("value"), &_2$$4);
+			zephir_read_property(&_3$$4, this_ptr, SL("_newLineId"), PH_NOISY_CC | PH_READONLY);
+			zephir_update_property_zval(&token, SL("id"), &_3$$4);
+		} else {
+			ZEPHIR_INIT_VAR(&_4$$5);
+			ZEPHIR_INIT_NVAR(&_4$$5);
+			ZVAL_STRING(&_4$$5, "");
+			zephir_update_property_zval(&token, SL("value"), &_4$$5);
+			zephir_read_property(&_5$$5, this_ptr, SL("_eosId"), PH_NOISY_CC | PH_READONLY);
+			zephir_update_property_zval(&token, SL("id"), &_5$$5);
+		}
+		RETURN_CCTOR(&token);
+	}
+	ZVAL_LONG(&_6, 0);
+	ZVAL_LONG(&_7, 1);
+	ZEPHIR_CALL_FUNCTION(&uni, "mb_substr", NULL, 65, &test, &_6, &_7);
+	zephir_check_call_status();
+	zephir_update_property_zval(&token, SL("value"), &uni);
+	zephir_read_property(&_6, this_ptr, SL("_tokenLine"), PH_NOISY_CC | PH_READONLY);
+	zephir_update_property_zval(&token, SL("line"), &_6);
+	zephir_read_property(&_7, this_ptr, SL("_singles"), PH_NOISY_CC | PH_READONLY);
+	ZEPHIR_CALL_METHOD(&_8, &_7, "offsetexists", NULL, 0, &uni);
+	zephir_check_call_status();
+	if (!(zephir_is_true(&_8))) {
+		zephir_read_property(&_9$$6, this_ptr, SL("_unknownId"), PH_NOISY_CC | PH_READONLY);
+		zephir_update_property_zval(&token, SL("id"), &_9$$6);
+		if (0) {
+			zephir_update_property_zval(&token, SL("_isSingle"), &__$true);
+		} else {
+			zephir_update_property_zval(&token, SL("_isSingle"), &__$false);
+		}
+	} else {
+		zephir_read_property(&_10$$7, this_ptr, SL("_singles"), PH_NOISY_CC | PH_READONLY);
+		ZEPHIR_CALL_METHOD(&_11$$7, &_10$$7, "offsetget", NULL, 0, &uni);
+		zephir_check_call_status();
+		ZEPHIR_INIT_ZVAL_NREF(_12$$7);
+		ZVAL_LONG(&_12$$7, zephir_get_intval(&_11$$7));
+		zephir_update_property_zval(&token, SL("id"), &_12$$7);
+		if (1) {
+			zephir_update_property_zval(&token, SL("_isSingle"), &__$true);
+		} else {
+			zephir_update_property_zval(&token, SL("_isSingle"), &__$false);
+		}
+	}
+	RETURN_CCTOR(&token);
+
+}
+
+/**
+ * If a peekNextChar has been done, this uses internal Token values to 
+ * advance the parse (namely the string length of the value),
+ * on the current line. It is important that token values have not been altered,
+ * and parse position has not been altered prior to calling this method.
+ * 
+ * A call to getToken, will still return same values as the Token;
+ */
+PHP_METHOD(Toml_TokenStream, acceptToken) {
+
+	zend_long takeoff = 0, nextLine$$4 = 0;
+	zval token, _0, _1, _2, _3, _4, _16, _17, _18, _19, _20, _21, _22, _23, _5$$3, _6$$3, _7$$4, _8$$4, _9$$4, _10$$4, _11$$4, _12$$4, _13$$4, _14$$5, _15$$5;
+	zval *this_ptr = getThis();
+
+	ZVAL_UNDEF(&token);
+	ZVAL_UNDEF(&_0);
+	ZVAL_UNDEF(&_1);
+	ZVAL_UNDEF(&_2);
+	ZVAL_UNDEF(&_3);
+	ZVAL_UNDEF(&_4);
+	ZVAL_UNDEF(&_16);
+	ZVAL_UNDEF(&_17);
+	ZVAL_UNDEF(&_18);
+	ZVAL_UNDEF(&_19);
+	ZVAL_UNDEF(&_20);
+	ZVAL_UNDEF(&_21);
+	ZVAL_UNDEF(&_22);
+	ZVAL_UNDEF(&_23);
+	ZVAL_UNDEF(&_5$$3);
+	ZVAL_UNDEF(&_6$$3);
+	ZVAL_UNDEF(&_7$$4);
+	ZVAL_UNDEF(&_8$$4);
+	ZVAL_UNDEF(&_9$$4);
+	ZVAL_UNDEF(&_10$$4);
+	ZVAL_UNDEF(&_11$$4);
+	ZVAL_UNDEF(&_12$$4);
+	ZVAL_UNDEF(&_13$$4);
+	ZVAL_UNDEF(&_14$$5);
+	ZVAL_UNDEF(&_15$$5);
+
+	ZEPHIR_MM_GROW();
+
+	ZEPHIR_OBS_VAR(&token);
+	zephir_read_property(&token, this_ptr, SL("_token"), PH_NOISY_CC);
+	zephir_read_property(&_0, &token, SL("id"), PH_NOISY_CC | PH_READONLY);
+	zephir_read_property(&_1, this_ptr, SL("_eosId"), PH_NOISY_CC | PH_READONLY);
+	zephir_read_property(&_2, &token, SL("id"), PH_NOISY_CC | PH_READONLY);
+	zephir_read_property(&_3, this_ptr, SL("_newLineId"), PH_NOISY_CC | PH_READONLY);
+	zephir_read_property(&_4, this_ptr, SL("_offset"), PH_NOISY_CC | PH_READONLY);
+	if (ZEPHIR_IS_IDENTICAL(&_0, &_1)) {
+		ZEPHIR_INIT_VAR(&_5$$3);
+		ZEPHIR_INIT_NVAR(&_5$$3);
+		ZVAL_STRING(&_5$$3, "");
+		zephir_update_property_zval(this_ptr, SL("_value"), &_5$$3);
+		zephir_read_property(&_6$$3, this_ptr, SL("_eosId"), PH_NOISY_CC | PH_READONLY);
+		zephir_update_property_zval(this_ptr, SL("_id"), &_6$$3);
+		RETURN_MM_NULL();
+	} else if (ZEPHIR_IS_IDENTICAL(&_2, &_3)) {
+		ZEPHIR_OBS_VAR(&_7$$4);
+		zephir_read_property(&_7$$4, this_ptr, SL("_lineNo"), PH_NOISY_CC);
+		nextLine$$4 = (zephir_get_intval(&_7$$4) + 1);
+		zephir_read_property(&_8$$4, this_ptr, SL("_lines"), PH_NOISY_CC | PH_READONLY);
+		zephir_read_property(&_9$$4, &_8$$4, SL("_me"), PH_NOISY_CC | PH_READONLY);
+		zephir_array_fetch_long(&_10$$4, &_9$$4, nextLine$$4, PH_NOISY | PH_READONLY, "toml/TokenStream.zep", 187 TSRMLS_CC);
+		zephir_update_property_zval(this_ptr, SL("_curLine"), &_10$$4);
+		ZEPHIR_INIT_ZVAL_NREF(_11$$4);
+		ZVAL_LONG(&_11$$4, 0);
+		zephir_update_property_zval(this_ptr, SL("_offset"), &_11$$4);
+		ZEPHIR_INIT_VAR(&_12$$4);
+		ZEPHIR_INIT_NVAR(&_12$$4);
+		ZVAL_STRING(&_12$$4, "");
+		zephir_update_property_zval(this_ptr, SL("_value"), &_12$$4);
+		zephir_read_property(&_11$$4, this_ptr, SL("_newLineId"), PH_NOISY_CC | PH_READONLY);
+		zephir_update_property_zval(this_ptr, SL("_id"), &_11$$4);
+		ZEPHIR_INIT_ZVAL_NREF(_13$$4);
+		ZVAL_LONG(&_13$$4, nextLine$$4);
+		zephir_update_property_zval(this_ptr, SL("_lineNo"), &_13$$4);
+		RETURN_MM_NULL();
+	} else if (ZEPHIR_IS_LONG_IDENTICAL(&_4, 0)) {
+		zephir_read_property(&_14$$5, this_ptr, SL("_lineNo"), PH_NOISY_CC | PH_READONLY);
+		ZEPHIR_INIT_ZVAL_NREF(_15$$5);
+		ZVAL_LONG(&_15$$5, (zephir_get_numberval(&_14$$5) + 1));
+		zephir_update_property_zval(this_ptr, SL("_tokenLine"), &_15$$5);
+	}
+	zephir_read_property(&_16, &token, SL("value"), PH_NOISY_CC | PH_READONLY);
+	takeoff = zephir_fast_strlen_ev(&_16);
+	zephir_read_property(&_17, this_ptr, SL("_curLine"), PH_NOISY_CC | PH_READONLY);
+	ZVAL_LONG(&_18, takeoff);
+	ZEPHIR_INIT_VAR(&_19);
+	zephir_substr(&_19, &_17, zephir_get_intval(&_18), 0, ZEPHIR_SUBSTR_NO_LENGTH);
+	zephir_update_property_zval(this_ptr, SL("_curLine"), &_19);
+	zephir_read_property(&_20, this_ptr, SL("_offset"), PH_NOISY_CC | PH_READONLY);
+	ZEPHIR_INIT_ZVAL_NREF(_21);
+	ZVAL_LONG(&_21, (zephir_get_numberval(&_20) + takeoff));
+	zephir_update_property_zval(this_ptr, SL("_offset"), &_21);
+	zephir_read_property(&_21, &token, SL("id"), PH_NOISY_CC | PH_READONLY);
+	zephir_update_property_zval(this_ptr, SL("_id"), &_21);
+	zephir_read_property(&_22, &token, SL("isSingle"), PH_NOISY_CC | PH_READONLY);
+	zephir_update_property_zval(this_ptr, SL("_isSingle"), &_22);
+	zephir_read_property(&_23, &token, SL("value"), PH_NOISY_CC | PH_READONLY);
+	zephir_update_property_zval(this_ptr, SL("_value"), &_23);
+	RETURN_MM_NULL();
+
+}
+
+/**
+ * Try regular expression, and return capture, if any.
+ * Assumes previous peekToken returned a known token.
+ * Leaves tokenId as unknownId.
+ * 
+ * @param string $pattern 
+ * @return boolean , true if match found
+ * Pattern must be such that preg_match can return match
+ *  array with 2 items.
+ *  If returns true, then getValue() returns the capture.
+ */
+PHP_METHOD(Toml_TokenStream, moveRegex) {
+
+	zend_long takeOff = 0;
+	zval *pattern_param = NULL, __$true, __$false, test, matches, _0, _1$$3, _2$$3, _3$$3, _4$$3, _5$$3, _6$$3;
+	zval pattern;
+	zval *this_ptr = getThis();
+
+	ZVAL_UNDEF(&pattern);
+	ZVAL_BOOL(&__$true, 1);
+	ZVAL_BOOL(&__$false, 0);
+	ZVAL_UNDEF(&test);
+	ZVAL_UNDEF(&matches);
+	ZVAL_UNDEF(&_0);
+	ZVAL_UNDEF(&_1$$3);
+	ZVAL_UNDEF(&_2$$3);
+	ZVAL_UNDEF(&_3$$3);
+	ZVAL_UNDEF(&_4$$3);
+	ZVAL_UNDEF(&_5$$3);
+	ZVAL_UNDEF(&_6$$3);
+
+	ZEPHIR_MM_GROW();
+	zephir_fetch_params(1, 1, 0, &pattern_param);
+
+	if (UNEXPECTED(Z_TYPE_P(pattern_param) != IS_STRING && Z_TYPE_P(pattern_param) != IS_NULL)) {
+		zephir_throw_exception_string(spl_ce_InvalidArgumentException, SL("Parameter 'pattern' must be a string") TSRMLS_CC);
+		RETURN_MM_NULL();
+	}
+	if (EXPECTED(Z_TYPE_P(pattern_param) == IS_STRING)) {
+		zephir_get_strval(&pattern, pattern_param);
+	} else {
+		ZEPHIR_INIT_VAR(&pattern);
+		ZVAL_EMPTY_STRING(&pattern);
+	}
+
+
+	ZEPHIR_OBS_VAR(&test);
+	zephir_read_property(&test, this_ptr, SL("_curLine"), PH_NOISY_CC);
+	ZEPHIR_INIT_VAR(&matches);
+	ZVAL_NULL(&matches);
+	ZEPHIR_INIT_VAR(&_0);
+	zephir_preg_match(&_0, &pattern, &test, &matches, 0, 0 , 0  TSRMLS_CC);
+	if (zephir_is_true(&_0)) {
+		zephir_array_fetch_long(&_1$$3, &matches, 1, PH_NOISY | PH_READONLY, "toml/TokenStream.zep", 225 TSRMLS_CC);
+		zephir_update_property_zval(this_ptr, SL("_value"), &_1$$3);
+		if (0) {
+			zephir_update_property_zval(this_ptr, SL("_isSingle"), &__$true);
+		} else {
+			zephir_update_property_zval(this_ptr, SL("_isSingle"), &__$false);
+		}
+		zephir_read_property(&_2$$3, this_ptr, SL("_unknownId"), PH_NOISY_CC | PH_READONLY);
+		zephir_update_property_zval(this_ptr, SL("_id"), &_2$$3);
+		zephir_array_fetch_long(&_3$$3, &matches, 0, PH_NOISY | PH_READONLY, "toml/TokenStream.zep", 228 TSRMLS_CC);
+		takeOff = zephir_fast_strlen_ev(&_3$$3);
+		zephir_read_property(&_4$$3, this_ptr, SL("_offset"), PH_NOISY_CC | PH_READONLY);
+		ZEPHIR_INIT_ZVAL_NREF(_5$$3);
+		ZVAL_LONG(&_5$$3, (zephir_get_numberval(&_4$$3) + takeOff));
+		zephir_update_property_zval(this_ptr, SL("_offset"), &_5$$3);
+		ZVAL_LONG(&_5$$3, takeOff);
+		ZEPHIR_INIT_VAR(&_6$$3);
+		zephir_substr(&_6$$3, &test, zephir_get_intval(&_5$$3), 0, ZEPHIR_SUBSTR_NO_LENGTH);
+		zephir_update_property_zval(this_ptr, SL("_curLine"), &_6$$3);
+		RETURN_MM_BOOL(1);
+	}
+	RETURN_MM_BOOL(0);
 
 }
 
@@ -453,7 +743,7 @@ PHP_METHOD(Toml_TokenStream, parseNextId) {
 		if (ZEPHIR_GT_LONG(&_3$$3, nextLine)) {
 			zephir_read_property(&_4$$4, this_ptr, SL("_lines"), PH_NOISY_CC | PH_READONLY);
 			zephir_read_property(&_5$$4, &_4$$4, SL("_me"), PH_NOISY_CC | PH_READONLY);
-			zephir_array_fetch_long(&_6$$4, &_5$$4, nextLine, PH_NOISY | PH_READONLY, "toml/TokenStream.zep", 153 TSRMLS_CC);
+			zephir_array_fetch_long(&_6$$4, &_5$$4, nextLine, PH_NOISY | PH_READONLY, "toml/TokenStream.zep", 270 TSRMLS_CC);
 			zephir_update_property_zval(this_ptr, SL("_curLine"), &_6$$4);
 			ZEPHIR_INIT_ZVAL_NREF(_7$$4);
 			ZVAL_LONG(&_7$$4, 0);
@@ -492,7 +782,7 @@ PHP_METHOD(Toml_TokenStream, parseNextId) {
 	zephir_update_property_zval(this_ptr, SL("_curLine"), &__$null);
 	zephir_read_property(&_14, this_ptr, SL("_regex"), PH_NOISY_CC | PH_READONLY);
 	zephir_read_property(&_15, &_14, SL("_store"), PH_NOISY_CC | PH_READONLY);
-	zephir_is_iterable(&_15, 0, "toml/TokenStream.zep", 193);
+	zephir_is_iterable(&_15, 0, "toml/TokenStream.zep", 310);
 	ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(&_15), _17, _18, _16)
 	{
 		ZEPHIR_INIT_NVAR(&id);
@@ -508,7 +798,7 @@ PHP_METHOD(Toml_TokenStream, parseNextId) {
 		ZEPHIR_INIT_NVAR(&_19$$7);
 		zephir_preg_match(&_19$$7, &pattern, &test, &matches$$7, 0, 0 , 0  TSRMLS_CC);
 		if (zephir_is_true(&_19$$7)) {
-			zephir_array_fetch_long(&_20$$8, &matches$$7, 1, PH_NOISY | PH_READONLY, "toml/TokenStream.zep", 176 TSRMLS_CC);
+			zephir_array_fetch_long(&_20$$8, &matches$$7, 1, PH_NOISY | PH_READONLY, "toml/TokenStream.zep", 293 TSRMLS_CC);
 			zephir_update_property_zval(this_ptr, SL("_value"), &_20$$8);
 			zephir_update_property_zval(this_ptr, SL("_id"), &id);
 			if (0) {
@@ -518,7 +808,7 @@ PHP_METHOD(Toml_TokenStream, parseNextId) {
 			}
 			zephir_read_property(&_21$$8, this_ptr, SL("_tokenLine"), PH_NOISY_CC | PH_READONLY);
 			zephir_update_property_zval(this_ptr, SL("_line"), &_21$$8);
-			zephir_array_fetch_long(&_22$$8, &matches$$7, 0, PH_NOISY | PH_READONLY, "toml/TokenStream.zep", 181 TSRMLS_CC);
+			zephir_array_fetch_long(&_22$$8, &matches$$7, 0, PH_NOISY | PH_READONLY, "toml/TokenStream.zep", 298 TSRMLS_CC);
 			takeoff = zephir_fast_strlen_ev(&_22$$8);
 			ZEPHIR_INIT_ZVAL_NREF(_23$$8);
 			ZVAL_LONG(&_23$$8, takeoff);
@@ -534,7 +824,7 @@ PHP_METHOD(Toml_TokenStream, parseNextId) {
 	ZEPHIR_INIT_NVAR(&id);
 	ZVAL_LONG(&_25, 0);
 	ZVAL_LONG(&_26, 1);
-	ZEPHIR_CALL_FUNCTION(&uni, "mb_substr", NULL, 67, &test, &_25, &_26);
+	ZEPHIR_CALL_FUNCTION(&uni, "mb_substr", NULL, 65, &test, &_25, &_26);
 	zephir_check_call_status();
 	takeoff = zephir_fast_strlen_ev(&uni);
 	ZEPHIR_INIT_ZVAL_NREF(_25);

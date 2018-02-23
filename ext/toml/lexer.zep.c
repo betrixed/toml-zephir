@@ -27,19 +27,19 @@ ZEPHIR_INIT_CLASS(Toml_Lexer) {
 
 	zend_declare_property_null(toml_lexer_ce, SL("_nameList"), ZEND_ACC_STATIC|ZEND_ACC_PRIVATE TSRMLS_CC);
 
-	zend_declare_property_null(toml_lexer_ce, SL("Singles"), ZEND_ACC_STATIC|ZEND_ACC_PUBLIC TSRMLS_CC);
-
 	zend_declare_property_null(toml_lexer_ce, SL("_AllRegExp"), ZEND_ACC_STATIC|ZEND_ACC_PRIVATE TSRMLS_CC);
 
 	zend_declare_property_null(toml_lexer_ce, SL("_AllSingles"), ZEND_ACC_STATIC|ZEND_ACC_PRIVATE TSRMLS_CC);
 
-	zend_declare_property_null(toml_lexer_ce, SL("BriefList"), ZEND_ACC_STATIC|ZEND_ACC_PUBLIC TSRMLS_CC);
+	zend_declare_property_null(toml_lexer_ce, SL("KeyList"), ZEND_ACC_STATIC|ZEND_ACC_PUBLIC TSRMLS_CC);
 
-	zend_declare_property_null(toml_lexer_ce, SL("FullList"), ZEND_ACC_STATIC|ZEND_ACC_PUBLIC TSRMLS_CC);
+	zend_declare_property_null(toml_lexer_ce, SL("ScalerList"), ZEND_ACC_STATIC|ZEND_ACC_PUBLIC TSRMLS_CC);
 
-	zend_declare_property_null(toml_lexer_ce, SL("BasicStringList"), ZEND_ACC_STATIC|ZEND_ACC_PUBLIC TSRMLS_CC);
+	zend_declare_property_null(toml_lexer_ce, SL("BasicString"), ZEND_ACC_STATIC|ZEND_ACC_PUBLIC TSRMLS_CC);
 
-	zend_declare_property_null(toml_lexer_ce, SL("LiteralStringList"), ZEND_ACC_STATIC|ZEND_ACC_PUBLIC TSRMLS_CC);
+	zend_declare_property_null(toml_lexer_ce, SL("LiteralString"), ZEND_ACC_STATIC|ZEND_ACC_PUBLIC TSRMLS_CC);
+
+	zend_declare_property_null(toml_lexer_ce, SL("LiteralMLString"), ZEND_ACC_STATIC|ZEND_ACC_PUBLIC TSRMLS_CC);
 
 	zephir_declare_class_constant_long(toml_lexer_ce, SL("T_BAD"), 0);
 
@@ -89,9 +89,11 @@ ZEPHIR_INIT_CLASS(Toml_Lexer) {
 
 	zephir_declare_class_constant_long(toml_lexer_ce, SL("T_HASH"), 23);
 
-	zephir_declare_class_constant_long(toml_lexer_ce, SL("T_CHAR"), 24);
+	zephir_declare_class_constant_long(toml_lexer_ce, SL("T_LITERAL_STRING"), 24);
 
-	zephir_declare_class_constant_long(toml_lexer_ce, SL("T_LAST_TOKEN"), 24);
+	zephir_declare_class_constant_long(toml_lexer_ce, SL("T_CHAR"), 25);
+
+	zephir_declare_class_constant_long(toml_lexer_ce, SL("T_LAST_TOKEN"), 25);
 
 	zephir_declare_class_constant_string(toml_lexer_ce, SL("TOML_VERSION"), "0.4");
 
@@ -134,7 +136,7 @@ PHP_METHOD(Toml_Lexer, tokenName) {
 	tokenId = zephir_get_intval(tokenId_param);
 
 
-	_0 = tokenId > 24;
+	_0 = tokenId > 25;
 	if (!(_0)) {
 		_0 = tokenId < 0;
 	}
@@ -142,7 +144,7 @@ PHP_METHOD(Toml_Lexer, tokenName) {
 		tokenId = 0;
 	}
 	zephir_read_static_property_ce(&_1, toml_lexer_ce, SL("_nameList"), PH_NOISY_CC | PH_READONLY);
-	zephir_array_fetch_long(&_2, &_1, tokenId, PH_NOISY | PH_READONLY, "toml/Lexer.zep", 116 TSRMLS_CC);
+	zephir_array_fetch_long(&_2, &_1, tokenId, PH_NOISY | PH_READONLY, "toml/Lexer.zep", 106 TSRMLS_CC);
 	RETURN_CTORW(&_2);
 
 }
@@ -173,7 +175,7 @@ PHP_METHOD(Toml_Lexer, getExpSet) {
 	object_init_ex(&result, toml_keytable_ce);
 	ZEPHIR_CALL_METHOD(NULL, &result, "__construct", NULL, 2);
 	zephir_check_call_status();
-	zephir_is_iterable(&idList, 0, "toml/Lexer.zep", 130);
+	zephir_is_iterable(&idList, 0, "toml/Lexer.zep", 120);
 	ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(&idList), _0)
 	{
 		ZEPHIR_INIT_NVAR(&id);
@@ -266,6 +268,31 @@ PHP_METHOD(Toml_Lexer, getAllSingles) {
 		ZEPHIR_INIT_NVAR(&_1$$3);
 		ZVAL_STRING(&_1$$3, "\\");
 		ZVAL_LONG(&_2$$3, 20);
+		ZEPHIR_CALL_METHOD(NULL, &kt$$3, "offsetset", NULL, 4, &_1$$3, &_2$$3);
+		zephir_check_call_status();
+		ZEPHIR_INIT_NVAR(&_1$$3);
+		ZVAL_STRING(&_1$$3, " ");
+		ZVAL_LONG(&_2$$3, 11);
+		ZEPHIR_CALL_METHOD(NULL, &kt$$3, "offsetset", NULL, 4, &_1$$3, &_2$$3);
+		zephir_check_call_status();
+		ZEPHIR_INIT_NVAR(&_1$$3);
+		ZVAL_STRING(&_1$$3, "\t");
+		ZVAL_LONG(&_2$$3, 11);
+		ZEPHIR_CALL_METHOD(NULL, &kt$$3, "offsetset", NULL, 4, &_1$$3, &_2$$3);
+		zephir_check_call_status();
+		ZEPHIR_INIT_NVAR(&_1$$3);
+		ZVAL_STRING(&_1$$3, "\r");
+		ZVAL_LONG(&_2$$3, 11);
+		ZEPHIR_CALL_METHOD(NULL, &kt$$3, "offsetset", NULL, 4, &_1$$3, &_2$$3);
+		zephir_check_call_status();
+		ZEPHIR_INIT_NVAR(&_1$$3);
+		ZVAL_STRING(&_1$$3, "\\f");
+		ZVAL_LONG(&_2$$3, 11);
+		ZEPHIR_CALL_METHOD(NULL, &kt$$3, "offsetset", NULL, 4, &_1$$3, &_2$$3);
+		zephir_check_call_status();
+		ZEPHIR_INIT_NVAR(&_1$$3);
+		ZVAL_STRING(&_1$$3, "\\b");
+		ZVAL_LONG(&_2$$3, 11);
 		ZEPHIR_CALL_METHOD(NULL, &kt$$3, "offsetset", NULL, 4, &_1$$3, &_2$$3);
 		zephir_check_call_status();
 		zend_update_static_property(toml_lexer_ce, ZEND_STRL("_AllSingles"), &kt$$3);
@@ -387,12 +414,22 @@ PHP_METHOD(Toml_Lexer, getAllRegex) {
 		zephir_check_call_status();
 		ZVAL_LONG(&_1$$3, 19);
 		ZEPHIR_INIT_NVAR(&_2$$3);
-		ZVAL_STRING(&_2$$3, "/^(\\\\(b|t|n|f|r|\"|\\\\|u[0-9AaBbCcDdEeFf]{4,4}|U[0-9AaBbCcDdEeFf]{8,8}))/");
+		ZVAL_STRING(&_2$$3, "/^\\\\(n|t|r|f|b|\\\\|\\\"|u[0-9A-Fa-f]{4,4}|U[0-9A-Fa-f]{8,8})/");
+		ZEPHIR_CALL_METHOD(NULL, &kt$$3, "offsetset", NULL, 4, &_1$$3, &_2$$3);
+		zephir_check_call_status();
+		ZVAL_LONG(&_1$$3, 20);
+		ZEPHIR_INIT_NVAR(&_2$$3);
+		ZVAL_STRING(&_2$$3, "/^(\\\\)/");
 		ZEPHIR_CALL_METHOD(NULL, &kt$$3, "offsetset", NULL, 4, &_1$$3, &_2$$3);
 		zephir_check_call_status();
 		ZVAL_LONG(&_1$$3, 21);
 		ZEPHIR_INIT_NVAR(&_2$$3);
-		ZVAL_STRING(&_2$$3, "/^([\\x{20}-\\x{21}\\x{23}-\\x{26}\\x{28}-\\x{5A}\\x{5E}-\\x{10FFFF}]+)/u");
+		ZVAL_STRING(&_2$$3, "/^([^\\x{0}-\\x{19}\\x{22}\\x{5C}]+)/u");
+		ZEPHIR_CALL_METHOD(NULL, &kt$$3, "offsetset", NULL, 4, &_1$$3, &_2$$3);
+		zephir_check_call_status();
+		ZVAL_LONG(&_1$$3, 24);
+		ZEPHIR_INIT_NVAR(&_2$$3);
+		ZVAL_STRING(&_2$$3, "/^([^\\x{0}-\\x{19}\\x{27}]+)/u");
 		ZEPHIR_CALL_METHOD(NULL, &kt$$3, "offsetset", NULL, 4, &_1$$3, &_2$$3);
 		zephir_check_call_status();
 		zend_update_static_property(toml_lexer_ce, ZEND_STRL("_AllRegExp"), &kt$$3);
@@ -434,13 +471,13 @@ PHP_METHOD(Toml_Lexer, tokenize) {
 	zephir_check_call_status();
 	ZEPHIR_CALL_SELF(&_0, "getallregex", NULL, 0);
 	zephir_check_call_status();
-	ZEPHIR_CALL_METHOD(NULL, &stream, "setexplist", NULL, 6, &_0);
+	ZEPHIR_CALL_METHOD(NULL, &stream, "setexpset", NULL, 6, &_0);
 	zephir_check_call_status();
 	ZEPHIR_CALL_SELF(&_1, "getallsingles", NULL, 0);
 	zephir_check_call_status();
 	ZEPHIR_CALL_METHOD(NULL, &stream, "setsingles", NULL, 7, &_1);
 	zephir_check_call_status();
-	ZVAL_LONG(&_2, 24);
+	ZVAL_LONG(&_2, 25);
 	ZEPHIR_CALL_METHOD(NULL, &stream, "setunknownid", NULL, 8, &_2);
 	zephir_check_call_status();
 	ZVAL_LONG(&_2, 10);
@@ -465,7 +502,7 @@ PHP_METHOD(Toml_Lexer, tokenize) {
 		if (zephir_clone(&_7$$3, &_5$$3 TSRMLS_CC) == FAILURE) {
 			RETURN_MM();
 		}
-		zephir_array_append(&list, &_7$$3, PH_SEPARATE, "toml/Lexer.zep", 200);
+		zephir_array_append(&list, &_7$$3, PH_SEPARATE, "toml/Lexer.zep", 202);
 	}
 	ZEPHIR_CALL_METHOD(&_8, &stream, "gettoken", &_6, 13);
 	zephir_check_call_status();
@@ -473,7 +510,7 @@ PHP_METHOD(Toml_Lexer, tokenize) {
 	if (zephir_clone(&_9, &_8 TSRMLS_CC) == FAILURE) {
 		RETURN_MM();
 	}
-	zephir_array_append(&list, &_9, PH_SEPARATE, "toml/Lexer.zep", 202);
+	zephir_array_append(&list, &_9, PH_SEPARATE, "toml/Lexer.zep", 204);
 	object_init_ex(return_value, toml_tokenlist_ce);
 	ZEPHIR_CALL_METHOD(NULL, return_value, "__construct", NULL, 14, &list);
 	zephir_check_call_status();
@@ -496,90 +533,64 @@ void zephir_init_static_properties_Toml_Lexer(TSRMLS_D) {
 	ZEPHIR_MM_GROW();
 
 	ZEPHIR_INIT_VAR(&_0);
-	zephir_create_array(&_0, 3, 0 TSRMLS_CC);
+	zephir_create_array(&_0, 2, 0 TSRMLS_CC);
 	ZEPHIR_INIT_VAR(&_1);
-	ZVAL_LONG(&_1, 21);
-	zephir_array_fast_append(&_0, &_1);
-	ZEPHIR_INIT_NVAR(&_1);
-	ZVAL_LONG(&_1, 19);
+	ZVAL_LONG(&_1, 24);
 	zephir_array_fast_append(&_0, &_1);
 	ZEPHIR_INIT_NVAR(&_1);
 	ZVAL_LONG(&_1, 8);
 	zephir_array_fast_append(&_0, &_1);
-	zend_update_static_property(toml_lexer_ce, ZEND_STRL("LiteralStringList"), &_0);
+	zend_update_static_property(toml_lexer_ce, ZEND_STRL("LiteralMLString"), &_0);
 	ZEPHIR_INIT_VAR(&_2);
-	zephir_create_array(&_2, 4, 0 TSRMLS_CC);
+	zephir_create_array(&_2, 1, 0 TSRMLS_CC);
 	ZEPHIR_INIT_NVAR(&_1);
-	ZVAL_LONG(&_1, 11);
+	ZVAL_LONG(&_1, 24);
 	zephir_array_fast_append(&_2, &_1);
-	ZEPHIR_INIT_NVAR(&_1);
-	ZVAL_LONG(&_1, 21);
-	zephir_array_fast_append(&_2, &_1);
-	ZEPHIR_INIT_NVAR(&_1);
-	ZVAL_LONG(&_1, 19);
-	zephir_array_fast_append(&_2, &_1);
-	ZEPHIR_INIT_NVAR(&_1);
-	ZVAL_LONG(&_1, 6);
-	zephir_array_fast_append(&_2, &_1);
-	zend_update_static_property(toml_lexer_ce, ZEND_STRL("BasicStringList"), &_2);
+	zend_update_static_property(toml_lexer_ce, ZEND_STRL("LiteralString"), &_2);
 	ZEPHIR_INIT_VAR(&_3);
-	zephir_create_array(&_3, 9, 0 TSRMLS_CC);
+	zephir_create_array(&_3, 4, 0 TSRMLS_CC);
 	ZEPHIR_INIT_NVAR(&_1);
 	ZVAL_LONG(&_1, 11);
 	zephir_array_fast_append(&_3, &_1);
+	ZEPHIR_INIT_NVAR(&_1);
+	ZVAL_LONG(&_1, 21);
+	zephir_array_fast_append(&_3, &_1);
+	ZEPHIR_INIT_NVAR(&_1);
+	ZVAL_LONG(&_1, 19);
+	zephir_array_fast_append(&_3, &_1);
+	ZEPHIR_INIT_NVAR(&_1);
+	ZVAL_LONG(&_1, 6);
+	zephir_array_fast_append(&_3, &_1);
+	zend_update_static_property(toml_lexer_ce, ZEND_STRL("BasicString"), &_3);
+	ZEPHIR_INIT_VAR(&_4);
+	zephir_create_array(&_4, 4, 0 TSRMLS_CC);
 	ZEPHIR_INIT_NVAR(&_1);
 	ZVAL_LONG(&_1, 2);
-	zephir_array_fast_append(&_3, &_1);
+	zephir_array_fast_append(&_4, &_1);
 	ZEPHIR_INIT_NVAR(&_1);
 	ZVAL_LONG(&_1, 3);
-	zephir_array_fast_append(&_3, &_1);
+	zephir_array_fast_append(&_4, &_1);
 	ZEPHIR_INIT_NVAR(&_1);
 	ZVAL_LONG(&_1, 22);
-	zephir_array_fast_append(&_3, &_1);
+	zephir_array_fast_append(&_4, &_1);
 	ZEPHIR_INIT_NVAR(&_1);
 	ZVAL_LONG(&_1, 5);
-	zephir_array_fast_append(&_3, &_1);
-	ZEPHIR_INIT_NVAR(&_1);
-	ZVAL_LONG(&_1, 6);
-	zephir_array_fast_append(&_3, &_1);
-	ZEPHIR_INIT_NVAR(&_1);
-	ZVAL_LONG(&_1, 8);
-	zephir_array_fast_append(&_3, &_1);
-	ZEPHIR_INIT_NVAR(&_1);
-	ZVAL_LONG(&_1, 18);
-	zephir_array_fast_append(&_3, &_1);
-	ZEPHIR_INIT_NVAR(&_1);
-	ZVAL_LONG(&_1, 19);
-	zephir_array_fast_append(&_3, &_1);
-	zend_update_static_property(toml_lexer_ce, ZEND_STRL("FullList"), &_3);
-	ZEPHIR_INIT_VAR(&_4);
-	zephir_create_array(&_4, 3, 0 TSRMLS_CC);
+	zephir_array_fast_append(&_4, &_1);
+	zend_update_static_property(toml_lexer_ce, ZEND_STRL("ScalerList"), &_4);
+	ZEPHIR_INIT_VAR(&_5);
+	zephir_create_array(&_5, 3, 0 TSRMLS_CC);
 	ZEPHIR_INIT_NVAR(&_1);
 	ZVAL_LONG(&_1, 11);
-	zephir_array_fast_append(&_4, &_1);
+	zephir_array_fast_append(&_5, &_1);
 	ZEPHIR_INIT_NVAR(&_1);
 	ZVAL_LONG(&_1, 18);
-	zephir_array_fast_append(&_4, &_1);
+	zephir_array_fast_append(&_5, &_1);
 	ZEPHIR_INIT_NVAR(&_1);
 	ZVAL_LONG(&_1, 5);
-	zephir_array_fast_append(&_4, &_1);
-	zend_update_static_property(toml_lexer_ce, ZEND_STRL("BriefList"), &_4);
-	ZEPHIR_INIT_VAR(&_5);
-	zephir_create_array(&_5, 11, 0 TSRMLS_CC);
-	add_assoc_long_ex(&_5, SL("="), 1);
-	add_assoc_long_ex(&_5, SL("["), 12);
-	add_assoc_long_ex(&_5, SL("]"), 13);
-	add_assoc_long_ex(&_5, SL("."), 17);
-	add_assoc_long_ex(&_5, SL(","), 16);
-	add_assoc_long_ex(&_5, SL("{"), 14);
-	add_assoc_long_ex(&_5, SL("}"), 15);
-	add_assoc_long_ex(&_5, SL("\""), 7);
-	add_assoc_long_ex(&_5, SL("'"), 9);
-	add_assoc_long_ex(&_5, SL("#"), 23);
-	add_assoc_long_ex(&_5, SL("\\"), 20);
-	zend_update_static_property(toml_lexer_ce, ZEND_STRL("Singles"), &_5);
+	zephir_array_fast_append(&_5, &_1);
+	zend_update_static_property(toml_lexer_ce, ZEND_STRL("KeyList"), &_5);
 	ZEPHIR_INIT_VAR(&_6);
-	zephir_create_array(&_6, 25, 0 TSRMLS_CC);
+	zephir_create_array(&_6, 26, 0 TSRMLS_CC);
 	ZEPHIR_INIT_NVAR(&_1);
 	ZVAL_STRING(&_1, "T_BAD");
 	zephir_array_fast_append(&_6, &_1);
@@ -651,6 +662,9 @@ void zephir_init_static_properties_Toml_Lexer(TSRMLS_D) {
 	zephir_array_fast_append(&_6, &_1);
 	ZEPHIR_INIT_NVAR(&_1);
 	ZVAL_STRING(&_1, "T_HASH");
+	zephir_array_fast_append(&_6, &_1);
+	ZEPHIR_INIT_NVAR(&_1);
+	ZVAL_STRING(&_1, "T_LITERAL_STRING");
 	zephir_array_fast_append(&_6, &_1);
 	ZEPHIR_INIT_NVAR(&_1);
 	ZVAL_STRING(&_1, "T_CHAR");

@@ -19,6 +19,15 @@ final class ValueList implements Arrayable
         let this->_list = [];
     }
 
+    public function allowType(string! type) -> boolean {
+        if empty(this->_type) && !empty(type) {
+            return true;
+        }
+        else {
+            return (type === this->_type);
+        }
+    }
+    
     public final function getTag() -> var
     {
         return this->_tag;

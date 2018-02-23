@@ -25,8 +25,9 @@ class Lexer {
     const T_BASIC_UNESCAPED = 21;
     const T_FLOAT = 22;
     const T_HASH = 23;
-    const T_CHAR = 24; // any other unicode character
-    const T_LAST_TOKEN = 24; // limit of token lookup
+    const T_LITERAL_STRING = 24;
+    const T_CHAR = 25; // any other unicode character
+    const T_LAST_TOKEN = 25; // limit of token lookup
 
     const TOML_VERSION = "0.4";
     const USE_VERSION = "Zephir";
@@ -56,48 +57,37 @@ class Lexer {
         "T_BASIC_UNESCAPED", //21
         "T_FLOAT", //22
         "T_HASH", //23
-        "T_CHAR" // 24
+        "T_LITERAL_STRING", //24
+        "T_CHAR" // 25
     ];
 
-   // Zephir cannot parse class constants eg Lexer::stuff used as keys in key:value
-   static public Singles = [
-        "=" : Lexer::T_EQUAL,
-        "[" : Lexer::T_LEFT_SQUARE_BRACE,
-        "]" : Lexer::T_RIGHT_SQUARE_BRACE,
-        "." : Lexer::T_DOT,
-        "," : Lexer::T_COMMA,
-        "{" : Lexer::T_LEFT_CURLY_BRACE,
-        "}" : Lexer::T_RIGHT_CURLY_BRACE,
-        "\"" : Lexer::T_QUOTATION_MARK,
-        "'" : Lexer::T_APOSTROPHE,
-        "#" : Lexer::T_HASH,
-        "\\" : Lexer::T_ESCAPE
-    ];
 
 
     static private _AllRegExp;
     static private _AllSingles;
     
-    static public BriefList = [
+    static public KeyList = [
         Lexer::T_SPACE,
         Lexer::T_UNQUOTED_KEY,
         Lexer::T_INTEGER
     ];
 
-    static public FullList = [
-        Lexer::T_SPACE, Lexer::T_BOOLEAN, Lexer::T_DATE_TIME, Lexer::T_FLOAT, Lexer::T_INTEGER, 
-        Lexer::T_3_QUOTATION_MARK, Lexer::T_3_APOSTROPHE,
-        Lexer::T_UNQUOTED_KEY,
-        Lexer::T_ESCAPED_CHARACTER
+    static public ScalerList = [
+        Lexer::T_BOOLEAN, Lexer::T_DATE_TIME, 
+        Lexer::T_FLOAT, Lexer::T_INTEGER
     ];
 
-    static public BasicStringList = [
+    static public BasicString = [
         Lexer::T_SPACE, Lexer::T_BASIC_UNESCAPED, 
         Lexer::T_ESCAPED_CHARACTER, Lexer::T_3_QUOTATION_MARK
     ];
 
-    static public LiteralStringList = [
-        Lexer::T_BASIC_UNESCAPED, Lexer::T_ESCAPED_CHARACTER, Lexer::T_3_APOSTROPHE
+    static public LiteralString = [
+        Lexer::T_LITERAL_STRING
+    ];
+
+    static public LiteralMLString = [
+        Lexer::T_LITERAL_STRING, Lexer::T_3_APOSTROPHE
     ];
 
    static  public function getTomlVersion() -> string
@@ -146,6 +136,12 @@ class Lexer {
             kt->offsetSet("'",Lexer::T_APOSTROPHE);
             kt->offsetSet("#",Lexer::T_HASH);
             kt->offsetSet("\\",Lexer::T_ESCAPE);
+            kt->offsetSet(" ",Lexer::T_SPACE);
+            kt->offsetSet("\t", Lexer::T_SPACE);
+            kt->offsetSet("\r", Lexer::T_SPACE);
+            // maybe these are not necessary
+            kt->offsetSet("\f", Lexer::T_SPACE);
+            kt->offsetSet("\b", Lexer::T_SPACE);
             let Lexer::_AllSingles = kt;
         }
         return Lexer::_AllSingles;
@@ -173,8 +169,14 @@ class Lexer {
             kt->offsetSet(Lexer::T_COMMA,"/^(,)/");
             kt->offsetSet(Lexer::T_DOT,"/^(\\.)/");
             kt->offsetSet(Lexer::T_UNQUOTED_KEY,"/^([-A-Z_a-z0-9]+)/");
-            kt->offsetSet(Lexer::T_ESCAPED_CHARACTER,"/^(\\\\(b|t|n|f|r|\"|\\\\|u[0-9AaBbCcDdEeFf]{4,4}|U[0-9AaBbCcDdEeFf]{8,8}))/");
-            kt->offsetSet(Lexer::T_BASIC_UNESCAPED,"/^([\\x{20}-\\x{21}\\x{23}-\\x{26}\\x{28}-\\x{5A}\\x{5E}-\\x{10FFFF}]+)/u");
+            kt->offsetSet(Lexer::T_ESCAPED_CHARACTER,
+                "/^\\\\(n|t|r|f|b|\\\\|\\\"|u[0-9A-Fa-f]{4,4}|U[0-9A-Fa-f]{8,8})/");
+            kt->offsetSet(Lexer::T_ESCAPE,"/^(\\\\)/"); 
+
+            kt->offsetSet(Lexer::T_BASIC_UNESCAPED,
+                "/^([^\\x{0}-\\x{19}\\x{22}\\x{5C}]+)/u");
+            kt->offsetSet(Lexer::T_LITERAL_STRING,
+                    "/^([^\\x{0}-\\x{19}\\x{27}]+)/u");
             let Lexer::_AllRegExp = kt;
         }
         return Lexer::_AllRegExp;
@@ -187,7 +189,7 @@ class Lexer {
         var list;
 
         let stream = new TokenStream();
-        stream->setExpList(Lexer::getAllRegex());
+        stream->setExpSet(Lexer::getAllRegex());
         stream->setSingles(Lexer::getAllSingles());
         stream->setUnknownId(Lexer::T_CHAR);
         stream->setNewLineId(Lexer::T_NEWLINE);

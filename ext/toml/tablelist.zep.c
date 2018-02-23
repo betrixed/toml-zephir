@@ -226,7 +226,7 @@ PHP_METHOD(Toml_TableList, offsetSet) {
 
 	ZEPHIR_INIT_VAR(&_0);
 	ZVAL_STRING(&_0, "\\Toml\\KeyTable");
-	ZEPHIR_CALL_FUNCTION(&_1, "is_a", NULL, 62, value, &_0);
+	ZEPHIR_CALL_FUNCTION(&_1, "is_a", NULL, 61, value, &_0);
 	zephir_check_call_status();
 	if (!zephir_is_true(&_1)) {
 		ZEPHIR_THROW_EXCEPTION_DEBUG_STR(toml_xarrayable_ce, "TableList Value must be \\Toml\\KeyTable", "toml/TableList.zep", 82);
@@ -366,7 +366,7 @@ PHP_METHOD(Toml_TableList, toArray) {
 	ZVAL_LONG(&_1, 0);
 	ZVAL_LONG(&_2, zephir_fast_count_int(&_0 TSRMLS_CC));
 	ZVAL_NULL(&_3);
-	ZEPHIR_CALL_FUNCTION(&result, "array_fill", NULL, 63, &_1, &_2, &_3);
+	ZEPHIR_CALL_FUNCTION(&result, "array_fill", NULL, 62, &_1, &_2, &_3);
 	zephir_check_call_status();
 	zephir_read_property(&_1, this_ptr, SL("_list"), PH_NOISY_CC | PH_READONLY);
 	zephir_is_iterable(&_1, 0, "toml/TableList.zep", 124);

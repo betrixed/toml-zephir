@@ -14,17 +14,17 @@ PHP_METHOD(Toml_Parser, parse);
 PHP_METHOD(Toml_Parser, getRoot);
 PHP_METHOD(Toml_Parser, implementation);
 PHP_METHOD(Toml_Parser, parseComment);
-PHP_METHOD(Toml_Parser, skipSpace);
+PHP_METHOD(Toml_Parser, getSimpleValue);
+PHP_METHOD(Toml_Parser, valueWrap);
+PHP_METHOD(Toml_Parser, regexError);
 PHP_METHOD(Toml_Parser, parseKeyValue);
 PHP_METHOD(Toml_Parser, parseKeyName);
-PHP_METHOD(Toml_Parser, parseSimpleValue);
-PHP_METHOD(Toml_Parser, parseBoolean);
 PHP_METHOD(Toml_Parser, parseInteger);
 PHP_METHOD(Toml_Parser, parseFloat);
-PHP_METHOD(Toml_Parser, parseBasicString);
-PHP_METHOD(Toml_Parser, parseMultilineBasicString);
+PHP_METHOD(Toml_Parser, parseEscapeString);
+PHP_METHOD(Toml_Parser, parseMLEscapeString);
 PHP_METHOD(Toml_Parser, parseLiteralString);
-PHP_METHOD(Toml_Parser, parseMultilineLiteralString);
+PHP_METHOD(Toml_Parser, parseMLString);
 PHP_METHOD(Toml_Parser, parseEscapedCharacter);
 PHP_METHOD(Toml_Parser, parseDatetime);
 PHP_METHOD(Toml_Parser, parseArray);
@@ -37,8 +37,6 @@ PHP_METHOD(Toml_Parser, parseObjectPath);
 PHP_METHOD(Toml_Parser, parseTablePath);
 PHP_METHOD(Toml_Parser, throwTokenError);
 PHP_METHOD(Toml_Parser, parseCommentsAndSpace);
-PHP_METHOD(Toml_Parser, errorUniqueKey);
-PHP_METHOD(Toml_Parser, unexpectedTokenError);
 PHP_METHOD(Toml_Parser, syntaxError);
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_pushexpset, 0, 0, 1)
@@ -73,8 +71,16 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_parsecomment, 0, 0, 1)
 	ZEND_ARG_OBJ_INFO(0, ts, Toml\\TokenStream, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_skipspace, 0, 0, 1)
-	ZEND_ARG_OBJ_INFO(0, ts, Toml\\TokenStream, 0)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_getsimplevalue, 0, 0, 1)
+	ZEND_ARG_INFO(0, tokenId)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_valuewrap, 0, 0, 1)
+	ZEND_ARG_INFO(0, s)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_regexerror, 0, 0, 1)
+	ZEND_ARG_INFO(0, msg)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_parsekeyvalue, 0, 0, 1)
@@ -86,14 +92,6 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_parsekeyname, 0, 0, 1)
 	ZEND_ARG_OBJ_INFO(0, ts, Toml\\TokenStream, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_parsesimplevalue, 0, 0, 1)
-	ZEND_ARG_OBJ_INFO(0, ts, Toml\\TokenStream, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_parseboolean, 0, 0, 1)
-	ZEND_ARG_OBJ_INFO(0, ts, Toml\\TokenStream, 0)
-ZEND_END_ARG_INFO()
-
 ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_parseinteger, 0, 0, 1)
 	ZEND_ARG_OBJ_INFO(0, ts, Toml\\TokenStream, 0)
 ZEND_END_ARG_INFO()
@@ -102,11 +100,11 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_parsefloat, 0, 0, 1)
 	ZEND_ARG_OBJ_INFO(0, ts, Toml\\TokenStream, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_parsebasicstring, 0, 0, 1)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_parseescapestring, 0, 0, 1)
 	ZEND_ARG_OBJ_INFO(0, ts, Toml\\TokenStream, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_parsemultilinebasicstring, 0, 0, 1)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_parsemlescapestring, 0, 0, 1)
 	ZEND_ARG_OBJ_INFO(0, ts, Toml\\TokenStream, 0)
 ZEND_END_ARG_INFO()
 
@@ -114,7 +112,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_parseliteralstring, 0, 0, 1)
 	ZEND_ARG_OBJ_INFO(0, ts, Toml\\TokenStream, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_parsemultilineliteralstring, 0, 0, 1)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_parsemlstring, 0, 0, 1)
 	ZEND_ARG_OBJ_INFO(0, ts, Toml\\TokenStream, 0)
 ZEND_END_ARG_INFO()
 
@@ -169,18 +167,9 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_parsecommentsandspace, 0, 0, 1)
 	ZEND_ARG_OBJ_INFO(0, ts, Toml\\TokenStream, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_erroruniquekey, 0, 0, 1)
-	ZEND_ARG_INFO(0, keyName)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_unexpectedtokenerror, 0, 0, 1)
-	ZEND_ARG_OBJ_INFO(0, token, Toml\\Token, 0)
-	ZEND_ARG_INFO(0, expectedMsg)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_syntaxerror, 0, 0, 1)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_toml_parser_syntaxerror, 0, 0, 2)
 	ZEND_ARG_INFO(0, msg)
-	ZEND_ARG_OBJ_INFO(0, token, Toml\\Token, 1)
+	ZEND_ARG_OBJ_INFO(0, token, Toml\\Token, 0)
 ZEND_END_ARG_INFO()
 
 ZEPHIR_INIT_FUNCS(toml_parser_method_entry) {
@@ -195,17 +184,17 @@ ZEPHIR_INIT_FUNCS(toml_parser_method_entry) {
 	PHP_ME(Toml_Parser, getRoot, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Toml_Parser, implementation, arginfo_toml_parser_implementation, ZEND_ACC_PRIVATE)
 	PHP_ME(Toml_Parser, parseComment, arginfo_toml_parser_parsecomment, ZEND_ACC_PRIVATE)
-	PHP_ME(Toml_Parser, skipSpace, arginfo_toml_parser_skipspace, ZEND_ACC_PRIVATE)
+	PHP_ME(Toml_Parser, getSimpleValue, arginfo_toml_parser_getsimplevalue, ZEND_ACC_PRIVATE)
+	PHP_ME(Toml_Parser, valueWrap, arginfo_toml_parser_valuewrap, ZEND_ACC_STATIC|ZEND_ACC_PRIVATE)
+	PHP_ME(Toml_Parser, regexError, arginfo_toml_parser_regexerror, ZEND_ACC_PRIVATE)
 	PHP_ME(Toml_Parser, parseKeyValue, arginfo_toml_parser_parsekeyvalue, ZEND_ACC_PRIVATE)
 	PHP_ME(Toml_Parser, parseKeyName, arginfo_toml_parser_parsekeyname, ZEND_ACC_PRIVATE)
-	PHP_ME(Toml_Parser, parseSimpleValue, arginfo_toml_parser_parsesimplevalue, ZEND_ACC_PRIVATE)
-	PHP_ME(Toml_Parser, parseBoolean, arginfo_toml_parser_parseboolean, ZEND_ACC_PRIVATE)
 	PHP_ME(Toml_Parser, parseInteger, arginfo_toml_parser_parseinteger, ZEND_ACC_PRIVATE)
 	PHP_ME(Toml_Parser, parseFloat, arginfo_toml_parser_parsefloat, ZEND_ACC_PRIVATE)
-	PHP_ME(Toml_Parser, parseBasicString, arginfo_toml_parser_parsebasicstring, ZEND_ACC_PRIVATE)
-	PHP_ME(Toml_Parser, parseMultilineBasicString, arginfo_toml_parser_parsemultilinebasicstring, ZEND_ACC_PRIVATE)
+	PHP_ME(Toml_Parser, parseEscapeString, arginfo_toml_parser_parseescapestring, ZEND_ACC_PRIVATE)
+	PHP_ME(Toml_Parser, parseMLEscapeString, arginfo_toml_parser_parsemlescapestring, ZEND_ACC_PRIVATE)
 	PHP_ME(Toml_Parser, parseLiteralString, arginfo_toml_parser_parseliteralstring, ZEND_ACC_PRIVATE)
-	PHP_ME(Toml_Parser, parseMultilineLiteralString, arginfo_toml_parser_parsemultilineliteralstring, ZEND_ACC_PRIVATE)
+	PHP_ME(Toml_Parser, parseMLString, arginfo_toml_parser_parsemlstring, ZEND_ACC_PRIVATE)
 	PHP_ME(Toml_Parser, parseEscapedCharacter, arginfo_toml_parser_parseescapedcharacter, ZEND_ACC_PRIVATE)
 	PHP_ME(Toml_Parser, parseDatetime, arginfo_toml_parser_parsedatetime, ZEND_ACC_PRIVATE)
 	PHP_ME(Toml_Parser, parseArray, arginfo_toml_parser_parsearray, ZEND_ACC_PRIVATE)
@@ -218,8 +207,6 @@ ZEPHIR_INIT_FUNCS(toml_parser_method_entry) {
 	PHP_ME(Toml_Parser, parseTablePath, arginfo_toml_parser_parsetablepath, ZEND_ACC_PRIVATE)
 	PHP_ME(Toml_Parser, throwTokenError, arginfo_toml_parser_throwtokenerror, ZEND_ACC_PRIVATE)
 	PHP_ME(Toml_Parser, parseCommentsAndSpace, arginfo_toml_parser_parsecommentsandspace, ZEND_ACC_PRIVATE)
-	PHP_ME(Toml_Parser, errorUniqueKey, arginfo_toml_parser_erroruniquekey, ZEND_ACC_PRIVATE)
-	PHP_ME(Toml_Parser, unexpectedTokenError, arginfo_toml_parser_unexpectedtokenerror, ZEND_ACC_PRIVATE)
 	PHP_ME(Toml_Parser, syntaxError, arginfo_toml_parser_syntaxerror, ZEND_ACC_PRIVATE)
 	PHP_FE_END
 };
